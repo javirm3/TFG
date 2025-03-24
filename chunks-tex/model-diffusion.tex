@@ -296,7 +296,252 @@ C_1 &= \frac{1}{2}\Bigl[s_L^2\,\phi''(X_{L,0}) - s_C^2\,\phi''(X_{C,0})\Bigr], \
 
 \bigskip
 \noindent
-% End of document
+
+We will consider variations of s,  $s = s_0 +\epsilon^2 \bar{s_i} + O(\epsilon^3)$. 
+
+Our fixed point is now: $R = (R, R, R, R_I)$
+
+
+
+\begin{equation}
+X_0 = s_0 R - c R_i +I_0 + U_0
+\end{equation}
+
+
+\begin{equation}
+\begin{aligned}
+X_{i,1} &= \epsilon [s_0 r_{1,i}- cr_{1,I}]\\
+X_{i,2} &= \epsilon^2 [s_0 r_{2,i}+ R\bar{s_i} + \Delta U + \bar{I_i}]\\
+X_{i,3} &= \epsilon^3 [s_0 r_{3,i}+ r_{1,i}\bar{s_i}]\\
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\Delta X_i = \epsilon [s_0 r_{1,i}- cr_{1,I}] + \epsilon^2[R\bar{s}_i + \Delta U + \bar{I}]
+\end{equation}
+
+\begin{equation}
+\phi(X_i) = \phi(X_0) + \phi'(X_0) (\Delta X_i) + \frac{1}{2}\,\phi''(X_0) (\Delta X_i)^2 + O(\epsilon^3)
+\end{equation}
+
+Substituting and grouping:
+
+\begin{equation}
+\phi(X_i) = \phi(X_0) + \epsilon \phi'(X_0) (s_0r_{1,i}-cr_{1,I}) +\epsilon^2\left(\phi'(X_0)(R\bar{s_i} + \Delta U +\bar{I_i}) + \frac{1}{2}\,\phi''(X_0)  (s_0r_{1,i}-cr_{1,I})^2\right) + O(\epsilon^3)
+\end{equation}
+
+In $O(1)$:
+\[
+R = \phi(X_{0})
+\]
+
+$O(\epsilon)$:
+
+\[
+\tau \dot{r}_{1,i} = \underbrace{(-1+s_{0} \phi'(X_0))}_0 r_{1,i} - c\phi'(X_0)r_{1,I}
+\]
+
+Then, we get that 
+\[
+N_2 = \phi'\begin{pmatrix}
+\bar{I}_L + R\bar{s}_L +\Delta U  \\\bar{I}_C  + R\bar{s}_C +\Delta U\\ 
+\bar{I}_R + R\bar{s}_R +\Delta U\\ 
+0
+\end{pmatrix} + \frac{1}{2} 
+\begin{pmatrix}\phi'' (s_0r_{L,1} - cr_{1,I})^2\\  
+\phi''(s_0r_{C,1} - cr_{1,I})^2\\  
+\phi''(s_0r_{R,1} - cr_{1,I})^2 \\ 
+\phi''_I \frac{g^2}{9}(r_{L,1} +r_{C,1} + r_{R,1}) 
+\end{pmatrix}
+\]
+
+At $O(\epsilon)$ we solve $L_0r_1 = 0$. We can write the solution as  $r_1 = e_1 X_1(T) + e_2X_2(T)$
+
+ Thus, we have that:
+ \[
+r_{1} = \begin{pmatrix}X_1+X_2\\-X_1+X_2\\-2X_2\\0 \end{pmatrix} 
+\]
+
+For $O(\epsilon^2)$:
+\[
+L_0r_2 +L_1r_1 = N_2
+\]
+
+We can now rewrite $N_2$ in terms of $X_1, X_2$ as:
+
+\[
+N_2 = \phi'\begin{pmatrix}
+\bar{I}_L + R\bar{s}_L +\Delta U  \\\bar{I}_C  + R\bar{s}_C +\Delta U\\ 
+\bar{I}_R + R\bar{s}_R +\Delta U\\ 
+0
+\end{pmatrix} + \frac{s_0^2 \phi''}{2} 
+\begin{pmatrix}
+(X_1 +X_2)^2\\  
+(-X_1 + X_2)^2\\  
+4X_2^2\\ 
+0
+\end{pmatrix}
+\]
+
+\subsection{Solvability conditions}
+If we multiply by a vector  $v^T  \in ker(L_0)$, we obtain:
+
+$$
+v^T N_2 = \underbrace{v^T L_0 r_1}_0 + v^T L_1 r_0 = v^T L_1 r_0
+$$
+Thus, 
+$$
+v^T N_2 - v^T L_1 r_0 = 0 \implies <v^T,  N_2 - L_1 r_0> = 0 \implies <v^T,  N_2 > = 0 
+$$
+
+In consequence, our solvability conditions will be:
+\begin{equation}
+\begin{aligned}
+    \langle e_1, L_1 r_1 \rangle &= \langle e_1, N_2 \rangle \\
+    \langle e_2, L_1 r_1 \rangle &= \langle e_2, N_2 \rangle
+\end{aligned}
+ \label{eq:solvability1}
+\end{equation}
+
+This results in the equations:
+\begin{equation}
+\begin{aligned}
+\tau \dot{X}_1 &= \frac{\phi'}{2}(\bar{I}_L -  \bar{I}_C + R (\bar{s}_L - \bar{s}_C)) + s_0^2\phi''(X_1X_2) + \frac{1}{2}(\xi_L(t)-\xi_C(t)) \\[8pt]
+\tau \dot{X}_2 &= \frac{\phi'}{6}(\bar{I}_L +  \bar{I}_C - 2 \bar{I}_R +  R (\bar{s}_L+ \bar{s}_C -2\bar{s}_R) ) + \frac{s_0^2\phi''}{6}(X_1^2-3X_2^2) + \frac{1}{6}(\xi_L(t)+\xi_C(t)-2\xi_R(t))
+\end{aligned}
+\label{eq:secondorder}
+\end{equation}
+
+
+We can think of this equations as the field in $\mathbb{R}^2$, $F(X_1,X_2) = (F_1,F_2) =(\bar{F_1},\bar{3F_2})$, where 
+\begin{align*}
+\bar{F_1} &=  \frac{\phi'}{2}(\bar{I}_L -  \bar{I}_C + R(\bar{s}_L - \bar{s}_C)) + s_0^2\phi''(X_1X_2)\\
+\bar{F_2} &= \frac{\phi'}{6}(\bar{I}_L +  \bar{I}_C - 2 \bar{I}_R + R(\bar{s}_L+ \bar{s}_C -2\bar{s}_R)) + \frac{s_0^2\phi''}{6}(X_1^2-3X_2^2) 
+\end{align*}
+
+
+The field defined by this equations is irrotational as:
+\begin{equation}
+\begin{aligned}
+ \frac{\partial \bar{F_1}}{\partial y}& = X_{1} \phi{''} s_{0}^{2} \\[8pt]
+ \frac{\partial\bar{ F_2}}{\partial x} & = \frac{X_{1} \phi{''} s_{0}^{2}}{3} 
+\end{aligned}
+\label{eq:secondorder}
+\end{equation}
+
+In consequence, it exists a potential $\psi$ such that $\frac{\partial \psi}{\partial x} = F_1, \frac{\partial \psi}{\partial y} = F_2 $:
+\[
+\psi(X_1,X_2) = \frac{1}{2}( X_{1}^{2} X_{2} \phi'' s_{0}^{2} - X_{1} \phi' \left(I_C - I_L +R  (s_C - s_L)\right)- X_{2}^{3} \phi'' s_{0}^{2} + X_{2} \phi' \left(I_C + I_L - 2 I_R + R(s_C + s_L - 2 s_R)\right))
+\]
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width = 0.9\textwidth]{plots/potencial.png}
+\caption{Potential obtained from the order 2 normal equations.}
+\end{center}
+\end{figure}
+
+
+We can go up to third order to obtain more terms in this potential:
+
+Now, $r_2$ has components in the directions $e_c = \begin{pmatrix}
+1,1,1,0\\
+\end{pmatrix}$ and $e_I = \begin{pmatrix}0,0,0,1\\\end{pmatrix}$. 
+
+Taking $r_2 = e_CR_{2C} + e_IR_{2I}$ :
+
+ \[
+r_{2} = \begin{pmatrix}R_{2C}\\R_{2C}\\R_{2C}\\R_{2I} \end{pmatrix} 
+\]
+
+
+Projecting the equations:
+
+\begin{equation}
+\begin{aligned}
+\langle e_c , L_0r_2 \rangle = \langle e_c, N_2\rangle\\[8pt]
+\langle e_I , L_0r_2 \rangle = \langle e_I, N_2\rangle
+\end{aligned}
+\label{eq:secondorder}
+\end{equation}
+
+Then as, \[L_0r_2 = \begin{pmatrix}
+c\phi'R_{2I},c\phi'R_{2I},c\phi'R_{2I}, -g\phi'_IR_{2C} +R_{2I}\\
+\end{pmatrix}\]
+
+We obtain the system of equations:
+%
+%\begin{pmatrix}
+%(X_1 -X_2)^2\\  
+%(-X_1 + X_2)^2\\  
+%4X_2^2\\ 
+%0
+%\end{pmatrix}
+
+\begin{equation}
+\begin{aligned}
+3c\phi'R_{2I}  &= \phi'(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R) +3\Delta U )+ \frac{s_0^2\phi''}{2}\left(2X_1^2+6X_2^2 \right)\\[8pt]
+-g\phi'R_{2C} +R_{2I} &= 0
+\end{aligned}
+\label{eq:}
+\end{equation}
+
+
+Isolating, we find:
+\[
+R_{2C} = \frac{1}{g\phi'_I}R_{2I} \qquad R_{2I} = \frac{1}{3c}(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R) +3\Delta U )+ \frac{s_0^2\phi''}{3c\phi'}(X_1^2+3X_2^2)
+\]
+
+Including $r_2$ and the terms O($\epsilon^3$) in $\Delta X_i$:
+\begin{equation}
+\Delta X_i = \epsilon [s_0 r_{1,i}- cr_{1,I}] + \epsilon^2[R\bar{s}_i + s_0r_{2,i} - c r_{2,I}+ \Delta U + \bar{I}] + \epsilon^3 [r_{1,i}\bar{s_i} ]
+\end{equation}
+% Porque no incluye s_0 r_{3,i}
+
+The $O(\epsilon^3)$ term in the Taylor expansion of $\phi(X_i)$ is:
+\begin{equation}
+\epsilon^3\left(\phi'(r_{1,i}\bar{s_i}) +\phi''(s_o r_{1,i}-cr_{1,I})(R\bar{s_i}+ s_0r_{2,i} - c r_{2,I}+ \Delta U + \bar{I_i}) + \frac{1}{6} \phi'''(s_o r_{1,i}-cr_{1,I})^3  \right) 
+\end{equation}
+
+Now, the equations up to $O(\epsilon^3)$ are:
+\[
+L_0r_3 + L _{1} r_{2} = N _{3}
+\]
+
+
+Where, 
+\[
+N_3 = 
+\phi'\begin{pmatrix}
+\bar{s}_L(X_1+X_2)\\
+\bar{s}_C(-X_1+X_2)\\ 
+\bar{s}_R(-2X_2)\\ 
+0
+\end{pmatrix} +\phi''s_0\begin{pmatrix}
+(X_1+X_2)(R\bar{s_L} + \underbrace{s_0R_{2C} - cR_{2I}}_{(s_0-cg\phi'_I)R_{2C}}+ \Delta U + \bar{I}_L)\\
+(-X_1+X_2)(R\bar{s_C} +(s_0-cg\phi'_I)R_{2C}+ \Delta U + \bar{I}_C)\\ 
+(-2X_2)(R\bar{s_R} +(s_0-cg\phi'_I)R_{2C}+ \Delta U + \bar{I}_R)\\ 
+0
+\end{pmatrix} + \frac{\phi'''s_0^3}{6} 
+\begin{pmatrix}
+(X_1 + X_2)^3\\  
+(-X_1 + X_2)^3\\  
+-8X_2^3 \\ 
+ 0
+\end{pmatrix}
+\]
+
+Applying the solvability conditions, we obtain the equations:
+\begin{equation}
+0 = \langle e_1, N_3\rangle \quad 0 = \langle e_2, N_3 \rangle
+\end{equation}
+
+Thus, 
+\begin{equation}
+\begin{aligned}
+s_0 \phi''
+\end{aligned}
+\end{equation}
 
 
 
