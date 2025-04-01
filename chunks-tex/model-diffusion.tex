@@ -103,17 +103,20 @@ An schematic representation of the model is shown in figure \ref{fig:model-rates
 \newpage
 
 
-\subsection{Derivation of the normal form}
-
+\subsection{Derivation of the normal form of order 2}
+\subsubsection{Expansion of the system}
 We assume a series expansion for the solution:
 \begin{align}
   r_i(t) &= R_i + \varepsilon\,r_{1,i}(t) + \varepsilon^2\,r_{2,i}(t) + O(\varepsilon^3), \quad i=L,C,R, \label{eq:exp_ex}\\[1mm]
   r_I(t) &= R_I + \varepsilon\,r_{1,I}(t) + \varepsilon^2\,r_{2,I}(t) + O(\varepsilon^3). \label{eq:exp_inh}
 \end{align}
-The fixed point \(R=(R_1,R_2,R_3,R_I)\) is determined at \(O(1)\):
+
+
+We will also consider variations of s,  $s = s_0 +\varepsilon^2 \bar{s_i} + O(\varepsilon^3)$. 
+Thus, the fixed point \(R=(R,R,R,R_I)\) is determined at \(O(1)\):
 \begin{align}
-  R_i &= \phi\Bigl(s_i\,R_i - c\,R_I + I_i \Bigr), \quad i=L,C,R, \label{eq:fixed_ex}\\[1mm]
-  R_I &= \phi_I\Bigl(\frac{g}{3}(R_L+R_C+R_R)+I_I\Bigr). \label{eq:fixed_inh}
+  R &= \phi\Bigl(s_0\,R - c\,R_I + I_0  \Bigr), \quad i=L,C,R, \label{eq:fixed_ex}\\[1mm]
+  R_I &= \phi_I\Bigl({g}R+I_I\Bigr). \label{eq:fixed_inh}
 \end{align}
 
 Additionally, we introduce a slow time scale:
@@ -131,100 +134,110 @@ We define
   X_i = s_i\,r_i - c\,r_I + I_i + U.
   \label{eq:argument}
 \end{equation}
-Substituting the expansions and using \(U =  \varepsilon^2\,\Delta U\), we have
+Substituting the expansions:
 \[
-X_i = s_i\,(R_i + \varepsilon\,r_{1,i} + \cdots) - c\,(R_I + \varepsilon\,r_{1,I}+\cdots) + I_i + \varepsilon^2\,\Delta U.
+X_i = (s_0+ \varepsilon^2 \bar{s}_i)\,(R + \varepsilon\,r_{1,i} +\varepsilon^2 r_{2,i} \cdots) - c\,(R_I + \varepsilon\,r_{1,I}+\varepsilon^2 r_{2,i} +\cdots) + I_0 +\varepsilon^2 \bar{I}_i + U_0 + \varepsilon^2\,\Delta U.
 \]
 We then group:
 \begin{itemize}
   \item Order \(O(1)\):
     \[
-    X_{i,0} = s_i\,R_i - c\,R_I + I_i .
+X_0 = s_0 R - c R_I +I_0 + U_0
     \]
   \item Order \(O(\varepsilon)\):
     \[
-    \delta X_i^{(1)} = \varepsilon\Bigl[s_i\,r_{1,i} - c\,r_{1,I}\Bigr].
+   X_{i,1} = \varepsilon [s_0 r_{1,i}- cr_{1,I}]
     \]
-  \item Order \(O(\varepsilon^2)\): includes the term \(\varepsilon^2\,\Delta U\).
+  \item Order \(O(\varepsilon^2)\): 
+\[
+X_{i,2} = \varepsilon^2 [s_0 r_{2,i}+ R\bar{s_i} + \Delta U + \bar{I_i}]
+\]
+  \item Order \(O(\varepsilon^3)\): 
+\[
+X_{i,3} = \varepsilon^3 [s_0 r_{3,i}+ r_{1,i}\bar{s_i}]
+\]
 \end{itemize}
+
+
+
+
+
 
 The Taylor expansion of \(\phi\) about \(X_{i,0}\) is
 \begin{equation}
-  \phi(X_i) = \phi(X_{i,0}) + \phi'(X_{i,0})\,\delta X_i + \frac{1}{2}\,\phi''(X_{i,0})\,(\delta X_i)^2 + O(\varepsilon^3),
-  \label{eq:taylor_exp}
+\phi(X_i) = \phi(X_0) + \phi'(X_0) (\Delta X_i) + \frac{1}{2}\,\phi''(X_0) (\Delta X_i)^2 +\frac{1}{6}\,\phi'''(X_0) (\Delta X_i)^3+ O(\varepsilon^4)
+\label{eq:taylor_exp}
 \end{equation}
 with
 \[
-\delta X_i = \varepsilon\Bigl[s_i\,r_{1,i} - c\,r_{1,I}\Bigr] + \varepsilon^2\,\Delta U.
+\Delta X_i = \varepsilon [s_0 r_{1,i}- cr_{1,I}] + \varepsilon^2[R\bar{s}_i + \Delta U + \bar{I}] + O(\varepsilon^3)
 \]
-Thus,
-\[
-\phi\Bigl(s_i\,r_i - c\,r_I + I_i + U\Bigr) = \phi(X_{i,0}) + \varepsilon\,\phi'(X_{i,0})\Bigl(s_i\,r_{1,i} - c\,r_{1,I}\Bigr) + \varepsilon^2\left(\phi'(X_{i,0})\,\Delta U + \frac{1}{2}\,\phi''(X_{i,0})\Bigl(s_i\,r_{1,i} - c\,r_{1,I}\Bigr)^2\right) + O(\varepsilon^3).
-\]
+
+
+From this point on, we will exclude the dependence of $\phi(X)$ and it's derivatives and write them as $\phi, \phi'...$
 
 
 For the equation (\ref{eq:exc}), substituting the expansion we have:
 
+
 At \(O(1)\):
 \[
-R_i = \phi(X_{i,0}), \quad i=L,C,R.
+R = \phi(X_{0}), \quad i=L,C,R.
 \]
-At \(O(\varepsilon)\):
-\begin{align}
-  \tau\,\frac{d}{dt}\Bigl(R_i + \varepsilon\,r_{1,i}\Bigr) &= -\Bigl(R_i + \varepsilon\,r_{1,i}\Bigr) \nonumber\\[1mm]
-  &\quad + \phi(X_{i,0}) + \varepsilon\,\phi'(X_{i,0})\Bigl[s_i\,r_{1,i}-c\,r_{1,I}\Bigr] + O(\varepsilon^2).
-  \label{eq:order1}
-\end{align}
-Since \(R_i=\phi(X_{i,0})\), the \(O(1)\) terms cancel. Thus, dividing by \(\varepsilon\) we obtain:
-\begin{equation}
-  \tau\,\dot{r}_{1,i} = \Bigl[-1 + s_i\,\phi'(X_{i,0})\Bigr] r_{1,i} - c\,\phi'(X_{i,0})\,r_{1,I}, \quad i=L,C,R.
-  \label{eq:order1_excitatory}
-\end{equation}
 The \textbf{bifurcation condition} we impose is:
 \begin{equation}
-  s_i\,\phi'(X_{i,0}) = 1, \quad i=L,C,R.
+  s_0\,\phi'(X_{0}) = 1, \quad i=L,C,R.
   \label{eq:bifurcation_condition}
 \end{equation}
-Under this condition, (\ref{eq:order1_excitatory}) reduces to:
-\begin{equation}
-  \tau\,\dot{r}_{1,i} = - c\,\phi'(X_{i,0})\,r_{1,I}, \quad i=L,C,R.
-  \label{eq:order1_ex_final}
-\end{equation}
+
+
+Thus, at \(O(\varepsilon)\):
+\[
+\tau \dot{r}_{1,i} = \underbrace{(-1+s_{0} \phi'(X_0))}_0 r_{1,i} - c\phi'(X_0)r_{1,I}
+\]
+
+
+
 
 Similarly, linearizing the inhibitory equation (\ref{eq:inh}) gives:
 \begin{equation}
-  \tau_I\,\dot{r}_{1,I} = -r_{1,I} + \phi_I'\Bigl(\frac{g}{3}(R_L+R_C+R_R)+I_I\Bigr)\frac{g}{3}\,\sum_{i=L,C,R}r_{1,i}.
+  \tau_I\,\dot{r}_{1,I} = -r_{1,I} + \phi_I'\Bigl(\frac{g}{3}(r_{L,1}+r_{C,1}+r_{R,1})+I_I\Bigr)\sum_{i=L,C,R}r_{i,1}.
   \label{eq:order1_inhibitory}
 \end{equation}
 
-Then the $O(\epsilon)$ equations can be written as
+The eigenvectors for the underlying DM process can be found solving:
 \[
 L_0\,r_1 = 0,
 \]
 with
-\begin{frame}
-\footnotesize
-\setlength{\arraycolsep}{2.5pt} % default: 5pt
-\medmuskip = 1mu % default: 4mu plus 2mu minus 4mu
+
 \[ 
   L_0 = \begin{pmatrix}
-    0 & 0 & 0 & c\,\phi'(X_{L,0}) \\[2mm]
-    0 & 0 & 0 & c\,\phi'(X_{C,0}) \\[2mm]
-    0 & 0 & 0 & c\,\phi'(X_{R,0}) \\[2mm]
-    -\dfrac{g}{3}\,\phi_I'\Bigl(\frac{g}{3}(R_L+R_C+R_R)+I_I\Bigr) & -\dfrac{g}{3}\,\phi_I'\Bigl(\frac{g}{3}(R_L+R_C+R_R)+I_I\Bigr) & -\dfrac{g}{3}\,\phi_I'\Bigl(\frac{g}{3}(R_L+R_C+R_R)+I_I\Bigr) & 1
+    0 & 0 & 0 & c\,\phi' \\[2mm]
+    0 & 0 & 0 & c\,\phi' \\[2mm]
+    0 & 0 & 0 & c\,\phi' \\[2mm]
+    -\dfrac{g}{3}\,\phi_I' & -\dfrac{g}{3}\,\phi_I' & -\dfrac{g}{3}\,\phi_I' & 1
   \end{pmatrix}.
   \label{eq:L0_matrix}
 \]
-\end{frame}
-Here, \(X_{i,0} = s_i\,R_i - c\,R_I + I_i\). 
-\bigskip
+
+
 \bigskip
 
 Due to the slow time scale \(T=\varepsilon\,t\), the time derivative expands as:
 \[
 \frac{d}{dt} = \frac{\partial}{\partial t} + \varepsilon\,\frac{\partial}{\partial T}.
 \]
-The contribution from the slow scale (when acting on \(r_1\)) appears at order \(\varepsilon^2\) and is grouped into the operator \(L_1\):
+
+
+The order \(\varepsilon^2\) equation is written as
+\begin{equation}
+  L_0\,r_2 + L_1\,r_1 = N_2,
+  \label{eq:order2_eq}
+\end{equation}
+
+Where,
+
 \begin{equation}
   L_1 = \begin{pmatrix}
     \tau\,\partial_T & 0 & 0 & 0 \\[2mm]
@@ -236,113 +249,17 @@ The contribution from the slow scale (when acting on \(r_1\)) appears at order \
 \end{equation}
 
 \bigskip
-At order \(\varepsilon^2\), we collect terms from the Taylor expansion (\ref{eq:taylor_exp}). Recall that
-\[
-\delta X_i = \varepsilon\Bigl[s_i\,r_{1,i}-c\,r_{1,I}\Bigr] + \varepsilon^2\,\Delta U.
-\]
-Thus, from (\ref{eq:taylor_exp}) we have:
+
+
+To compute $N_2$ we make use of the Taylor formula (\ref{eq:taylor_exp}):
 \begin{equation}
-  \phi(X_i) = \phi(X_{i,0}) + \varepsilon\,\phi'(X_{i,0})\Bigl(s_i\,r_{1,i}-c\,r_{1,I}\Bigr) + \varepsilon^2\left(\phi'(X_{i,0})\,\Delta U + \frac{1}{2}\,\phi''(X_{i,0})\Bigl(s_i\,r_{1,i}-c\,r_{1,I}\Bigr)^2\right) + O(\varepsilon^3).
+\phi(X_i) = \phi(X_0) + \varepsilon \phi'(X_0) (s_0r_{1,i}-cr_{1,I}) +\varepsilon^2\left(\phi'(X_0)(R\bar{s_i} + \Delta U +\bar{I_i}) + \frac{1}{2}\,\phi''(X_0)  (s_0r_{1,i}-cr_{1,I})^2\right) + O(\varepsilon^3)
   \label{eq:taylor_full2}
 \end{equation}
-If the inputs have the form
-\[
-I_i = I_0 + \varepsilon^2\,\bar{I}_i,
-\]
-then the order \(\varepsilon^2\) term for the \(i\)th excitatory equation is:
+
+
+Then,
 \begin{equation}
-  N_{2,i} = \phi'(X_{i,0})\Bigl(\bar{I}_i + \Delta U\Bigr) + \frac{1}{2}\,\phi''(X_{i,0})\Bigl[s_i\,r_{1,i}-c\,r_{1,I}\Bigr]^2.
-  \label{eq:N2_excitatory}
-\end{equation}
-An analogous term \(N_{2,I}\) is obtained for the inhibitory equation from the expansion of \(\phi_I\).
-
-Thus, the order \(\varepsilon^2\) equation is written as
-\begin{equation}
-  L_0\,r_2 + L_1\,r_1 = N_2,
-  \label{eq:order2_eq}
-\end{equation}
-
-
-Since \(L_0\) has a nontrivial null space (by the bifurcation condition), a solution for \(r_2\) exists only if the forcing term \(N_2 - L_1\,r_1\) is orthogonal to the null space of the adjoint of \(L_0\). Let \(\{e_1,e_2\}\) be a basis for this null space, for example, we choose:
-\[
-e_1 = (1, -1, 0, 0), \quad e_1 = (1, 1, -2, 0).
-\]
-The \textbf{solvability condition} is given by:
-\begin{equation}
-  \langle e_j,\; L_1\,r_1 - N_2 \rangle = 0,\quad j=1,2.
-  \label{eq:solvability_cond}
-\end{equation}
-Expressing the first-order solution in the form
-\[
-r_1 = e_1\,X_1(T) + e_2\,X_2(T),
-\]
-Where $X_1 = r_L-r_C, X_2 =  r_L+r_C-2r_R, $
-
-The normal form equations are:
-\begin{align}
-  \tau\,\dot{X}_1 &= A_1\,\bigl(\bar{I}_L - \bar{I}_C\bigr) + A_1\,\Delta U + C_1\,X_1\,X_2 + A_1 (\xi_L(t)-\xi_C(t)) + O(\epsilon^3), \label{eq:normal_form1}\\[2mm]
-  \tau\,\dot{X}_2 &= A_2\,\bigl(\bar{I}_L + \bar{I}_C - 2\bar{I}_R\bigr) + A_2\,\Delta U + C_2\,\bigl(X_1^2 - 3X_2^2\bigr) +  A_2(\xi_L(t)+\xi_C(t)-2\xi_R(t)) + O(\epsilon^3). \label{eq:normal_form2}
-\end{align}
-
-Here, the coefficients are given in terms of the initial parameters as follows:
-\[
-\begin{aligned}
-A_1 &= \frac{1}{2}\Bigl[\phi'(X_{L,0}) - \phi'(X_{C,0})\Bigr], \quad
-& A_2 &= \frac{1}{6}\Bigl[\phi'(X_{L,0}) + \phi'(X_{C,0}) - 2\,\phi'(X_{R,0})\Bigr],\\[1mm]
-C_1 &= \frac{1}{2}\Bigl[s_L^2\,\phi''(X_{L,0}) - s_C^2\,\phi''(X_{C,0})\Bigr], \quad
-& C_2 &= \frac{1}{6}\Bigl[s_L^2\,\phi''(X_{L,0}) + s_C^2\,\phi''(X_{C,0}) - 2\,s_R^2\,\phi''(X_{R,0})\Bigr].
-\end{aligned}
-\]
-
-\bigskip
-\noindent
-
-We will consider variations of s,  $s = s_0 +\epsilon^2 \bar{s_i} + O(\epsilon^3)$. 
-
-Our fixed point is now: $R = (R, R, R, R_I)$
-
-
-
-\begin{equation}
-X_0 = s_0 R - c R_i +I_0 + U_0
-\end{equation}
-
-
-\begin{equation}
-\begin{aligned}
-X_{i,1} &= \epsilon [s_0 r_{1,i}- cr_{1,I}]\\
-X_{i,2} &= \epsilon^2 [s_0 r_{2,i}+ R\bar{s_i} + \Delta U + \bar{I_i}]\\
-X_{i,3} &= \epsilon^3 [s_0 r_{3,i}+ r_{1,i}\bar{s_i}]\\
-\end{aligned}
-\end{equation}
-
-\begin{equation}
-\Delta X_i = \epsilon [s_0 r_{1,i}- cr_{1,I}] + \epsilon^2[R\bar{s}_i + \Delta U + \bar{I}]
-\end{equation}
-
-\begin{equation}
-\phi(X_i) = \phi(X_0) + \phi'(X_0) (\Delta X_i) + \frac{1}{2}\,\phi''(X_0) (\Delta X_i)^2 + O(\epsilon^3)
-\end{equation}
-
-Substituting and grouping:
-
-\begin{equation}
-\phi(X_i) = \phi(X_0) + \epsilon \phi'(X_0) (s_0r_{1,i}-cr_{1,I}) +\epsilon^2\left(\phi'(X_0)(R\bar{s_i} + \Delta U +\bar{I_i}) + \frac{1}{2}\,\phi''(X_0)  (s_0r_{1,i}-cr_{1,I})^2\right) + O(\epsilon^3)
-\end{equation}
-
-In $O(1)$:
-\[
-R = \phi(X_{0})
-\]
-
-$O(\epsilon)$:
-
-\[
-\tau \dot{r}_{1,i} = \underbrace{(-1+s_{0} \phi'(X_0))}_0 r_{1,i} - c\phi'(X_0)r_{1,I}
-\]
-
-Then, we get that 
-\[
 N_2 = \phi'\begin{pmatrix}
 \bar{I}_L + R\bar{s}_L +\Delta U  \\\bar{I}_C  + R\bar{s}_C +\Delta U\\ 
 \bar{I}_R + R\bar{s}_R +\Delta U\\ 
@@ -353,19 +270,26 @@ N_2 = \phi'\begin{pmatrix}
 \phi''(s_0r_{R,1} - cr_{1,I})^2 \\ 
 \phi''_I \frac{g^2}{9}(r_{L,1} +r_{C,1} + r_{R,1}) 
 \end{pmatrix}
+\label{eq:N2}
+\end{equation}
+
+
+Since \(L_0\) has a nontrivial null space (by the bifurcation condition), we can write the solution of $L_0r_1 = 0$  in terms of a basis of this null space, for example, we choose:
+\[
+e_1 = (1, -1, 0, 0), \quad e_1 = (1, 1, -2, 0).
 \]
 
-At $O(\epsilon)$ we solve $L_0r_1 = 0$. We can write the solution as  $r_1 = e_1 X_1(T) + e_2X_2(T)$
+Thus, the $O(\varepsilon)$ solution can be written as:
+\[
+r_1 = e_1\,X_1(T) + e_2\,X_2(T),
+\]
+Where $X_1 = r_L-r_C, X_2 =  r_L+r_C-2r_R, $
 
- Thus, we have that:
+In consequence, we have that:
  \[
 r_{1} = \begin{pmatrix}X_1+X_2\\-X_1+X_2\\-2X_2\\0 \end{pmatrix} 
 \]
 
-For $O(\epsilon^2)$:
-\[
-L_0r_2 +L_1r_1 = N_2
-\]
 
 We can now rewrite $N_2$ in terms of $X_1, X_2$ as:
 
@@ -383,7 +307,7 @@ N_2 = \phi'\begin{pmatrix}
 \end{pmatrix}
 \]
 
-\subsection{Solvability conditions}
+\subsubsection{Solvability conditions}
 If we multiply by a vector  $v^T  \in ker(L_0)$, we obtain:
 
 $$
@@ -391,7 +315,7 @@ v^T N_2 = \underbrace{v^T L_0 r_1}_0 + v^T L_1 r_0 = v^T L_1 r_0
 $$
 Thus, 
 $$
-v^T N_2 - v^T L_1 r_0 = 0 \implies <v^T,  N_2 - L_1 r_0> = 0 \implies <v^T,  N_2 > = 0 
+v^T N_2 - v^T L_1 r_0 = 0 \implies \langle v^T,  N_2 - L_1 r_0\rangle = 0 \implies \langle v^T,  N_2 \rangle = 0 
 $$
 
 In consequence, our solvability conditions will be:
@@ -403,7 +327,7 @@ In consequence, our solvability conditions will be:
  \label{eq:solvability1}
 \end{equation}
 
-This results in the equations:
+This results in the \textbf{second order normal form} equations:
 \begin{equation}
 \begin{aligned}
 \tau \dot{X}_1 &= \frac{\phi'}{2}(\bar{I}_L -  \bar{I}_C + R (\bar{s}_L - \bar{s}_C)) + s_0^2\phi''(X_1X_2) + \frac{1}{2}(\xi_L(t)-\xi_C(t)) \\[8pt]
@@ -412,6 +336,7 @@ This results in the equations:
 \label{eq:secondorder}
 \end{equation}
 
+\subsubsection{Potential derivation}
 
 We can think of this equations as the field in $\mathbb{R}^2$, $F(X_1,X_2) = (F_1,F_2) =(\bar{F_1},\bar{3F_2})$, where 
 \begin{align*}
@@ -441,6 +366,7 @@ In consequence, it exists a potential $\psi$ such that $\frac{\partial \psi}{\pa
 \end{center}
 \end{figure}
 
+\subsection{Derivation of the normal form of order 3}
 
 We can go up to third order to obtain more terms in this potential:
 
@@ -492,18 +418,18 @@ Isolating, we find:
 R_{2C} = \frac{1}{g\phi'_I}R_{2I} \qquad R_{2I} = \frac{1}{3c}(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R) +3\Delta U )+ \frac{s_0^2\phi''}{3c\phi'}(X_1^2+3X_2^2)
 \]
 
-Including $r_2$ and the terms O($\epsilon^3$) in $\Delta X_i$:
+Including $r_2$ and the terms O($\varepsilon^3$) in $\Delta X_i$:
 \begin{equation}
-\Delta X_i = \epsilon [s_0 r_{1,i}- cr_{1,I}] + \epsilon^2[R\bar{s}_i + s_0r_{2,i} - c r_{2,I}+ \Delta U + \bar{I}] + \epsilon^3 [r_{1,i}\bar{s_i} ]
+\Delta X_i = \varepsilon [s_0 r_{1,i}- cr_{1,I}] + \varepsilon^2[R\bar{s}_i + s_0r_{2,i} - c r_{2,I}+ \Delta U + \bar{I}] + \varepsilon^3 [r_{1,i}\bar{s_i} ]
 \end{equation}
 % Porque no incluye s_0 r_{3,i}
 
-The $O(\epsilon^3)$ term in the Taylor expansion of $\phi(X_i)$ is:
+The $O(\varepsilon^3)$ term in the Taylor expansion of $\phi(X_i)$ is:
 \begin{equation}
-\epsilon^3\left(\phi'(r_{1,i}\bar{s_i}) +\phi''(s_o r_{1,i}-cr_{1,I})(R\bar{s_i}+ s_0r_{2,i} - c r_{2,I}+ \Delta U + \bar{I_i}) + \frac{1}{6} \phi'''(s_o r_{1,i}-cr_{1,I})^3  \right) 
+\varepsilon^3\left(\phi'(r_{1,i}\bar{s_i}) +\phi''(s_o r_{1,i}-cr_{1,I})(R\bar{s_i}+ s_0r_{2,i} - c r_{2,I}+ \Delta U + \bar{I_i}) + \frac{1}{6} \phi'''(s_o r_{1,i}-cr_{1,I})^3  \right) 
 \end{equation}
 
-Now, the equations up to $O(\epsilon^3)$ are:
+Now, the equations up to $O(\varepsilon^3)$ are:
 \[
 L_0r_3 + L _{1} r_{2} = N _{3}
 \]
@@ -536,12 +462,23 @@ Applying the solvability conditions, we obtain the equations:
 0 = \langle e_1, N_3\rangle \quad 0 = \langle e_2, N_3 \rangle
 \end{equation}
 
-Thus, 
+Solving, we can add this terms to the second order normal form and obtain the \textbf{third order normal form} equations: 
 \begin{equation}
 \begin{aligned}
-s_0 \phi''
+0 = & \; \phi'(X_1(\bar{s}_L+ \bar{s}_C)+X_2(\bar{s}_L -\bar{s}_C))\\
+&+ s_0 \phi'' \Bigl( X_1(R(\bar{s}_L+\bar{s}_C)+2(s_0-cg\phi'_I)R_{2C}  + 2\Delta U + \bar{I}_L + \bar{I}_C) \Bigr) + X_2\bigl(R(\bar{s}_L-\bar{s}_C) + \bar{I}_L - \bar{I}_C\bigr)\\
+&+ \frac{\phi'''s_0^3}{3}  X_1\bigl(X_1^2+3X_2^2\bigr)
 \end{aligned}
 \end{equation}
+
+\begin{equation}
+\begin{aligned}
+0 = &\; \phi'(X_1(\bar{s}_L- \bar{s}_C)+X_2(\bar{s}_L +\bar{s}_C+4\bar{s}_R))\\ 
+& + s_0\phi'' \Bigl(X_1(R(\bar{s}_L-\bar{s}_C) + \bar{I}_L - \bar{I}_C) + X_2(R(\bar{s}_L+\bar{s}_C+ 4\bar{s}_R)+ 6(s_0-cg\phi'_I)R_{2C}  + 6\Delta U+ (\bar{I}_L + \bar{I}_C + 4\bar{I}_R))\Bigr)\\
+&+ \phi'''s_0^3 X_2\bigl(X_1^2+3X_2^2\bigr)
+\end{aligned}
+\end{equation}
+
 
 
 

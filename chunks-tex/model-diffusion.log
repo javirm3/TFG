@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.20)  24 MAR 2025 19:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.20)  28 MAR 2025 12:02
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1452,42 +1452,32 @@ al/texlive/2024/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/202
 st/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/d
 vips/lm/lm-mathsy.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/lm/lm
 -mathex.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
- [2]
-Overfull \hbox (17.77649pt too wide) detected at line 163
-\OML/lmm/m/it/10 ^^^[]s[] r[] \OMS/lmsy/m/n/10 ^^@ \OML/lmm/m/it/10 c r[] \OT1/
-lmr/m/n/10 + \OML/lmm/m/it/10 I[] \OT1/lmr/m/n/10 + \OML/lmm/m/it/10 U[] \OT1/l
-mr/m/n/10 = \OML/lmm/m/it/10 ^^^\OT1/lmr/m/n/10 (\OML/lmm/m/it/10 X[]\OT1/lmr/m
-/n/10 ) + \OML/lmm/m/it/10 " ^^^[]\OT1/lmr/m/n/10 (\OML/lmm/m/it/10 X[]\OT1/lmr
-/m/n/10 )[]\OML/lmm/m/it/10 s[] r[] \OMS/lmsy/m/n/10 ^^@ \OML/lmm/m/it/10 c r[]
-[] \OT1/lmr/m/n/10 + \OML/lmm/m/it/10 "[] [] \OT1/lmr/m/n/10 + \OML/lmm/m/it/10
- O\OT1/lmr/m/n/10 (\OML/lmm/m/it/10 "[]\OT1/lmr/m/n/10 )\OML/lmm/m/it/10 :
- []
-
-[3]
-Overfull \hbox (16.10408pt too wide) detected at line 217
-\OML/lmm/m/it/10 L[] \OT1/lmr/m/n/10 = [] \OML/lmm/m/it/10 :[]
- []
-
-[4] [5] [6]
-Overfull \hbox (3.17026pt too wide) detected at line 435
+ [2] [3] [4]
+[5]
+Overfull \hbox (3.17026pt too wide) detected at line 360
 \OML/lmm/m/it/10  \OT1/lmr/m/n/10 (\OML/lmm/m/it/10 X[]; X[]\OT1/lmr/m/n/10 ) =
  [](\OML/lmm/m/it/10 X[]X[]^^^[]s[] \OMS/lmsy/m/n/10 ^^@ \OML/lmm/m/it/10 X[]^^
 ^[] [] \OMS/lmsy/m/n/10 ^^@ \OML/lmm/m/it/10 X[]^^^[]s[] \OT1/lmr/m/n/10 + \OML
 /lmm/m/it/10 X[]^^^[] []\OT1/lmr/m/n/10 )
  []
 
-<plots/potencial.png, id=97, 722.7pt x 505.89pt>
+<plots/potencial.png, id=94, 722.7pt x 505.89pt>
 File: plots/potencial.png Graphic file (type png)
 <use plots/potencial.png>
-Package pdftex.def Info: plots/potencial.png  used on input line 439.
+Package pdftex.def Info: plots/potencial.png  used on input line 364.
 (pdftex.def)             Requested size: 435.32422pt x 304.7251pt.
-[7 <./plots/potencial.png>]
-Overfull \hbox (3.40935pt too wide) detected at line 532
+[6 <./plots/potencial.png>]
+Overfull \hbox (3.40935pt too wide) detected at line 458
 \OML/lmm/m/it/10 N[] \OT1/lmr/m/n/10 = \OML/lmm/m/it/10 ^^^[] [] \OT1/lmr/m/n/1
 0 + \OML/lmm/m/it/10 ^^^[]s[] [] \OT1/lmr/m/n/10 + [] []
  []
 
-[8] (./model-diffusion.aux)
+
+Overfull \hbox (3.60306pt too wide) detected at line 480
+[][][][][]
+ []
+
+[7] (./model-diffusion.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
@@ -1497,14 +1487,14 @@ L3 programming layer <2024-02-20>
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `model-diffusion.out' has not changed.
-(rerunfilecheck)             Checksum: A8DB83C2D401F1A9AA3AB6F07C77E20D;528.
+(rerunfilecheck)             Checksum: D3FD3CB3E6E2FBB83DFB32B30EC46FB2;1241.
  ) 
 Here is how much of TeX's memory you used:
- 31668 strings out of 474116
- 589900 string characters out of 5743681
+ 31645 strings out of 474116
+ 589603 string characters out of 5743681
  1954187 words of memory out of 5000000
- 53272 multiletter control sequences out of 15000+600000
- 614792 words of font info for 121 fonts, out of 8000000 for 9000
+ 53264 multiletter control sequences out of 15000+600000
+ 611549 words of font info for 117 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  114i,14n,115p,1012b,998s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></usr/lo
@@ -1522,10 +1512,10 @@ public/lm/lmsy10.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/lm/
 lmsy5.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/lm/lmsy7.pfb><
 /usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.p
 fb>
-Output written on model-diffusion.pdf (8 pages, 1380331 bytes).
+Output written on model-diffusion.pdf (7 pages, 1377792 bytes).
 PDF statistics:
- 215 PDF objects out of 1000 (max. 8388607)
- 166 compressed objects within 2 object streams
- 52 named destinations out of 1000 (max. 500000)
- 32810 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 210 PDF objects out of 1000 (max. 8388607)
+ 162 compressed objects within 2 object streams
+ 44 named destinations out of 1000 (max. 500000)
+ 30786 words of extra memory for PDF output out of 35830 (max. 10000000)
 
