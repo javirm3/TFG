@@ -26,16 +26,18 @@
 
 We consider the following system for three alternatives:
 \begin{align}
-  \tau\,\dot{r}_L &= -r_L + \phi\Bigl(s_L\,r_L - c\,r_I + I_L + U\Bigr) +\xi_L(t) ,  \label{eq:rL}\\[1mm]
-  \tau\,\dot{r}_C &= -r_C + \phi\Bigl(s_C\,r_C - c\,r_I + I_C + U\Bigr)+\xi_C(t), \label{eq:rC}\\[1mm]
-  \tau\,\dot{r}_R &= -r_R + \phi\Bigl(s_R\,r_R - c\,r_I + I_R + U\Bigr)+\xi_R(t), \label{eq:rR}\\[1mm]
+  \tau\,\dot{r}_L &= -r_L + \phi\Bigl(s_L\,r_L - c\,r_I + I_L \Bigr) +\xi_L(t) ,  \label{eq:rL}\\[1mm]
+  \tau\,\dot{r}_C &= -r_C + \phi\Bigl(s_C\,r_C - c\,r_I + I_C \Bigr)+\xi_C(t), \label{eq:rC}\\[1mm]
+  \tau\,\dot{r}_R &= -r_R + \phi\Bigl(s_R\,r_R - c\,r_I + I_R \Bigr)+\xi_R(t), \label{eq:rR}\\[1mm]
   \tau_I\,\dot{r}_I &= -r_I + \phi_I\Bigl(\frac{g}{3}\bigl(r_L+r_R+r_C\bigr)+I_I\Bigr)+\xi_I(t). \label{eq:rI}
 \end{align}
+
+Where $I_i = I_0 + \bar{I}_i$ for $i = L,C,R$. 
 
 In a summarized form:
 
 \begin{align}
-  \tau\,\dot{r}_i &= -r_i + \phi\Bigl(s_i\,r_i - c\,r_I + I_i + U\Bigr)+\xi_i(t), \quad i=L,C,R, \label{eq:exc}\\[1mm]
+  \tau\,\dot{r}_i &= -r_i + \phi\Bigl(s_i\,r_i - c\,r_I + I_i )+\xi_i(t), \quad i=L,C,R, \label{eq:exc}\\[1mm]
   \tau_I\,\dot{r}_I &= -r_I + \phi_I\Bigl(\frac{g}{3}(R_L+R_C+R_R)+I_I\Bigr)+\xi_I(t), \label{eq:inh}
 \end{align}
 where:
@@ -44,12 +46,8 @@ where:
   \item \(r_I\) is the firing rate of the inhibitory population.
   \item \(s_i\) is the self-excitation coefficient (which may differ among populations).
   \item \(c\) is the inhibition coefficient.
-  \item \(I_i\) are each population external input.
-  \item \(U\) is a ramping urgency signal. We assume it varies slowly:
-    \[
-    U = U_0 + \varepsilon^2\,\Delta U.
-    \]
-	As U is a ramping signal, we have that $U_0 = 0$
+  \item \(\bar{I}_i\) are each population external input.
+  \item \(I_0\) is a ramping urgency signal.
   \item \(\tau\) and \(\tau_I\) are the time constants for the excitatory and inhibitory populations, respectively.
 \end{itemize}
 
@@ -90,14 +88,14 @@ An schematic representation of the model is shown in figure \ref{fig:model-rates
   \draw[->, thick, bend left=20] (I) edge node[arrowlabel, right, xshift = 5pt, yshift = 5pt] {$c$} (R);
 
   % Draw external input arrows (dashed) to each excitatory neuron.
-  \draw[->, dashed, thick] ($(L)+(0,3)$) -- (L) node[arrowlabel, pos = 0, yshift = 10pt ] {$I_L+U$};
-  \draw[->, dashed, thick] ($(C)+(3,0)$) -- (C) node[arrowlabel, pos = 0, yshift = 15pt] {$I_C+U$};
-  \draw[->, dashed, thick] ($(R)+(0,3)$) -- (R) node[arrowlabel, pos = 0, yshift = 10pt ]  {$I_R+U$};
+  \draw[->, dashed, thick] ($(L)+(0,3)$) -- (L) node[arrowlabel, pos = 0, yshift = 10pt ] {$I_L+I_0$};
+  \draw[->, dashed, thick] ($(C)+(3,0)$) -- (C) node[arrowlabel, pos = 0, yshift = 15pt] {$I_C+I_0$};
+  \draw[->, dashed, thick] ($(R)+(0,3)$) -- (R) node[arrowlabel, pos = 0, yshift = 10pt ]  {$I_R+I_0$};
   % Draw external input arrow to the inhibitory neuron.
   \draw[->, dashed, thick] ($(I)+(0,-3)$) -- (I) node[arrowlabel, midway, right] {$I_I$};
 
 \end{tikzpicture}
-\caption{Schematic representation of the rate model for 3-choice tasks. The choices are represented by three excitatory populations labeled L (Left), C (Center), and R (Right), which receive external inputs ($I_L$, $I_C$, and $I_R$, respectively) and exhibit self-excitation with strengths $s_L$, $s_C$, and $s_R$. There's also an external ramping input U common to all the excitatory populations. Each excitatory population affects to an inhibitory population (I) with weight $g/3$, and the inhibitory neuron provides feedback with strength $c$ to all excitatory populations. An external input $I_I$ is also applied to the inhibitory neuron.}
+\caption{Schematic representation of the rate model for 3-choice tasks. The choices are represented by three excitatory populations labeled L (Left), C (Center), and R (Right), which receive external inputs ($\bar{I}_L$, $\bar{I}_C$, and $\bar{I}_R$, respectively) and exhibit self-excitation with strengths $s_L$, $s_C$, and $s_R$. There's also an external ramping input $I_0$ common to all the excitatory populations. Each excitatory population affects to an inhibitory population (I) with weight $g/3$, and the inhibitory neuron provides feedback with strength $c$ to all excitatory populations. An external input $I_I$ is also applied to the inhibitory neuron.}
 \label{fig:model-rates}
 \end{figure}
 \newpage
@@ -112,7 +110,7 @@ We assume a series expansion for the solution:
 \end{align}
 
 
-We will also consider variations of s,  $s = s_0 +\varepsilon^2 \bar{s_i} + O(\varepsilon^3)$. 
+We will also consider variations of s,  $s = s_0 +\varepsilon^2 \bar{s_i} + O(\varepsilon^3)$ and $I_i = I_0 + \varepsilon^2\bar{I}_i$ . 
 Thus, the fixed point \(R=(R,R,R,R_I)\) is determined at \(O(1)\):
 \begin{align}
   R &= \phi\Bigl(s_0\,R - c\,R_I + I_0  \Bigr), \quad i=L,C,R, \label{eq:fixed_ex}\\[1mm]
@@ -131,18 +129,18 @@ so that
 
 We define
 \begin{equation}
-  X_i = s_i\,r_i - c\,r_I + I_i + U.
+  X_i = s_i\,r_i - c\,r_I + I_i.
   \label{eq:argument}
 \end{equation}
 Substituting the expansions:
 \[
-X_i = (s_0+ \varepsilon^2 \bar{s}_i)\,(R + \varepsilon\,r_{1,i} +\varepsilon^2 r_{2,i} \cdots) - c\,(R_I + \varepsilon\,r_{1,I}+\varepsilon^2 r_{2,i} +\cdots) + I_0 +\varepsilon^2 \bar{I}_i + U_0 + \varepsilon^2\,\Delta U.
+X_i = (s_0+ \varepsilon^2 \bar{s}_i)\,(R + \varepsilon\,r_{1,i} +\varepsilon^2 r_{2,i} \cdots) - c\,(R_I + \varepsilon\,r_{1,I}+\varepsilon^2 r_{2,i} +\cdots) + I_0 +\varepsilon^2 \bar{I}_i .
 \]
 We then group:
 \begin{itemize}
   \item Order \(O(1)\):
     \[
-X_0 = s_0 R - c R_I +I_0 + U_0
+X_0 = s_0 R - c R_I +I_0
     \]
   \item Order \(O(\varepsilon)\):
     \[
@@ -150,7 +148,7 @@ X_0 = s_0 R - c R_I +I_0 + U_0
     \]
   \item Order \(O(\varepsilon^2)\): 
 \[
-X_{i,2} = \varepsilon^2 [s_0 r_{2,i}+ R\bar{s_i} + \Delta U + \bar{I_i}]
+X_{i,2} = \varepsilon^2 [s_0 r_{2,i}+ R\bar{s_i} + \bar{I_i}]
 \]
   \item Order \(O(\varepsilon^3)\): 
 \[
@@ -170,7 +168,7 @@ The Taylor expansion of \(\phi\) about \(X_{i,0}\) is
 \end{equation}
 with
 \[
-\Delta X_i = \varepsilon [s_0 r_{1,i}- cr_{1,I}] + \varepsilon^2[R\bar{s}_i + \Delta U + \bar{I}] + O(\varepsilon^3)
+\Delta X_i = \varepsilon [s_0 r_{1,i}- cr_{1,I}] + \varepsilon^2[R\bar{s}_i + \bar{I}] + O(\varepsilon^3)
 \]
 
 
@@ -253,7 +251,7 @@ Where,
 
 To compute $N_2$ we make use of the Taylor formula (\ref{eq:taylor_exp}):
 \begin{equation}
-\phi(X_i) = \phi(X_0) + \varepsilon \phi'(X_0) (s_0r_{1,i}-cr_{1,I}) +\varepsilon^2\left(\phi'(X_0)(R\bar{s_i} + \Delta U +\bar{I_i}) + \frac{1}{2}\,\phi''(X_0)  (s_0r_{1,i}-cr_{1,I})^2\right) + O(\varepsilon^3)
+\phi(X_i) = \phi(X_0) + \varepsilon \phi'(X_0) (s_0r_{1,i}-cr_{1,I}) +\varepsilon^2\left(\phi'(X_0)(R\bar{s_i} +\bar{I_i}) + \frac{1}{2}\,\phi''(X_0)  (s_0r_{1,i}-cr_{1,I})^2\right) + O(\varepsilon^3)
   \label{eq:taylor_full2}
 \end{equation}
 
@@ -261,8 +259,8 @@ To compute $N_2$ we make use of the Taylor formula (\ref{eq:taylor_exp}):
 Then,
 \begin{equation}
 N_2 = \phi'\begin{pmatrix}
-\bar{I}_L + R\bar{s}_L +\Delta U  \\\bar{I}_C  + R\bar{s}_C +\Delta U\\ 
-\bar{I}_R + R\bar{s}_R +\Delta U\\ 
+\bar{I}_L + R\bar{s}_L \\\bar{I}_C  + R\bar{s}_C \\ 
+\bar{I}_R + R\bar{s}_R \\ 
 0
 \end{pmatrix} + \frac{1}{2} 
 \begin{pmatrix}\phi'' (s_0r_{L,1} - cr_{1,I})^2\\  
@@ -276,7 +274,7 @@ N_2 = \phi'\begin{pmatrix}
 
 Since \(L_0\) has a nontrivial null space (by the bifurcation condition), we can write the solution of $L_0r_1 = 0$  in terms of a basis of this null space, for example, we choose:
 \[
-e_1 = (1, -1, 0, 0), \quad e_1 = (1, 1, -2, 0).
+e_1 = (1, -1, 0, 0), \quad e_2 = (1, 1, -2, 0).
 \]
 
 Thus, the $O(\varepsilon)$ solution can be written as:
@@ -295,8 +293,9 @@ We can now rewrite $N_2$ in terms of $X_1, X_2$ as:
 
 \[
 N_2 = \phi'\begin{pmatrix}
-\bar{I}_L + R\bar{s}_L +\Delta U  \\\bar{I}_C  + R\bar{s}_C +\Delta U\\ 
-\bar{I}_R + R\bar{s}_R +\Delta U\\ 
+\bar{I}_L + R\bar{s}_L  \\
+\bar{I}_C  + R\bar{s}_C \\ 
+\bar{I}_R + R\bar{s}_R \\ 
 0
 \end{pmatrix} + \frac{s_0^2 \phi''}{2} 
 \begin{pmatrix}
@@ -406,7 +405,7 @@ We obtain the system of equations:
 
 \begin{equation}
 \begin{aligned}
-3c\phi'R_{2I}  &= \phi'(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R) +3\Delta U )+ \frac{s_0^2\phi''}{2}\left(2X_1^2+6X_2^2 \right)\\[8pt]
+3c\phi'R_{2I}  &= \phi'(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R) )+ \frac{s_0^2\phi''}{2}\left(2X_1^2+6X_2^2 \right)\\[8pt]
 -g\phi'R_{2C} +R_{2I} &= 0
 \end{aligned}
 \label{eq:}
@@ -415,18 +414,18 @@ We obtain the system of equations:
 
 Isolating, we find:
 \[
-R_{2C} = \frac{1}{g\phi'_I}R_{2I} \qquad R_{2I} = \frac{1}{3c}(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R) +3\Delta U )+ \frac{s_0^2\phi''}{3c\phi'}(X_1^2+3X_2^2)
+R_{2C} = \frac{1}{g\phi'_I}R_{2I} \qquad R_{2I} = \frac{1}{3c}(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R))+ \frac{s_0^2\phi''}{3c\phi'}(X_1^2+3X_2^2)
 \]
 
 Including $r_2$ and the terms O($\varepsilon^3$) in $\Delta X_i$:
 \begin{equation}
-\Delta X_i = \varepsilon [s_0 r_{1,i}- cr_{1,I}] + \varepsilon^2[R\bar{s}_i + s_0r_{2,i} - c r_{2,I}+ \Delta U + \bar{I}] + \varepsilon^3 [r_{1,i}\bar{s_i} ]
+\Delta X_i = \varepsilon [s_0 r_{1,i}- cr_{1,I}] + \varepsilon^2[R\bar{s}_i + s_0r_{2,i} - c r_{2,I}+ \bar{I}] + \varepsilon^3 [r_{1,i}\bar{s_i} ]
 \end{equation}
 % Porque no incluye s_0 r_{3,i}
 
 The $O(\varepsilon^3)$ term in the Taylor expansion of $\phi(X_i)$ is:
 \begin{equation}
-\varepsilon^3\left(\phi'(r_{1,i}\bar{s_i}) +\phi''(s_o r_{1,i}-cr_{1,I})(R\bar{s_i}+ s_0r_{2,i} - c r_{2,I}+ \Delta U + \bar{I_i}) + \frac{1}{6} \phi'''(s_o r_{1,i}-cr_{1,I})^3  \right) 
+\varepsilon^3\left(\phi'(r_{1,i}\bar{s_i}) +\phi''(s_o r_{1,i}-cr_{1,I})(R\bar{s_i}+ s_0r_{2,i} - c r_{2,I}+ \bar{I_i}) + \frac{1}{6} \phi'''(s_o r_{1,i}-cr_{1,I})^3  \right) 
 \end{equation}
 
 Now, the equations up to $O(\varepsilon^3)$ are:
@@ -444,9 +443,9 @@ N_3 =
 \bar{s}_R(-2X_2)\\ 
 0
 \end{pmatrix} +\phi''s_0\begin{pmatrix}
-(X_1+X_2)(R\bar{s_L} + \underbrace{s_0R_{2C} - cR_{2I}}_{(s_0-cg\phi'_I)R_{2C}}+ \Delta U + \bar{I}_L)\\
-(-X_1+X_2)(R\bar{s_C} +(s_0-cg\phi'_I)R_{2C}+ \Delta U + \bar{I}_C)\\ 
-(-2X_2)(R\bar{s_R} +(s_0-cg\phi'_I)R_{2C}+ \Delta U + \bar{I}_R)\\ 
+(X_1+X_2)(R\bar{s_L} + \underbrace{s_0R_{2C} - cR_{2I}}_{(s_0-cg\phi'_I)R_{2C}}+ \bar{I}_L)\\
+(-X_1+X_2)(R\bar{s_C} +(s_0-cg\phi'_I)R_{2C}+ \bar{I}_C)\\ 
+(-2X_2)(R\bar{s_R} +(s_0-cg\phi'_I)R_{2C} + \bar{I}_R)\\ 
 0
 \end{pmatrix} + \frac{\phi'''s_0^3}{6} 
 \begin{pmatrix}
@@ -466,20 +465,62 @@ Solving, we can add this terms to the second order normal form and obtain the \t
 \begin{equation}
 \begin{aligned}
 0 = & \; \phi'(X_1(\bar{s}_L+ \bar{s}_C)+X_2(\bar{s}_L -\bar{s}_C))\\
-&+ s_0 \phi'' \Bigl( X_1(R(\bar{s}_L+\bar{s}_C)+2(s_0-cg\phi'_I)R_{2C}  + 2\Delta U + \bar{I}_L + \bar{I}_C) \Bigr) + X_2\bigl(R(\bar{s}_L-\bar{s}_C) + \bar{I}_L - \bar{I}_C\bigr)\\
+&+ s_0 \phi'' \Bigl( X_1(R(\bar{s}_L+\bar{s}_C)+2(s_0-cg\phi'_I)R_{2C}   + \bar{I}_L + \bar{I}_C)  + X_2\bigl(R(\bar{s}_L-\bar{s}_C) + \bar{I}_L - \bar{I}_C\bigr)\Bigr)\\
 &+ \frac{\phi'''s_0^3}{3}  X_1\bigl(X_1^2+3X_2^2\bigr)
 \end{aligned}
 \end{equation}
 
+
 \begin{equation}
 \begin{aligned}
 0 = &\; \phi'(X_1(\bar{s}_L- \bar{s}_C)+X_2(\bar{s}_L +\bar{s}_C+4\bar{s}_R))\\ 
-& + s_0\phi'' \Bigl(X_1(R(\bar{s}_L-\bar{s}_C) + \bar{I}_L - \bar{I}_C) + X_2(R(\bar{s}_L+\bar{s}_C+ 4\bar{s}_R)+ 6(s_0-cg\phi'_I)R_{2C}  + 6\Delta U+ (\bar{I}_L + \bar{I}_C + 4\bar{I}_R))\Bigr)\\
+& + s_0\phi'' \Bigl(X_1(R(\bar{s}_L-\bar{s}_C) + \bar{I}_L - \bar{I}_C) + X_2(R(\bar{s}_L+\bar{s}_C+ 4\bar{s}_R)+ 6(s_0-cg\phi'_I)R_{2C}  + (\bar{I}_L + \bar{I}_C + 4\bar{I}_R))\Bigr)\\
 &+ \phi'''s_0^3 X_2\bigl(X_1^2+3X_2^2\bigr)
 \end{aligned}
 \end{equation}
 
+Put in terms of $X_1, X_2$ and adding to the equations that we found at $O(\varepsilon^2)$:
 
+\begin{equation}
+\begin{aligned}
+\tau \dot{X}_1 &= \frac{\phi'}{2}(\bar{I}_L -  \bar{I}_C + X_1(\bar{s}_L+ \bar{s}_C)+(R+X_2) (\bar{s}_L - \bar{s}_C)) \\
+&+ \frac{s_0\phi''}{2}\Bigl(R(\bar{s}_L+\bar{s}_C) +\bar{I}_L + \bar{I}_C + \frac{2(s_0-cg\phi'_I)}{3cg\phi'_I}\bigl(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R)\bigl) \Bigr)X_1\\
+&+ \frac{s_0\phi''}{2}\bigl(R(\bar{s}_L-\bar{s}_C) + \bar{I}_L - \bar{I}_C\bigr)X_2+ s_0^2\phi''(X_1X_2)+ \frac{(s_0-cg\phi'_I)}{3cg\phi'_I} s_0^3 (\phi'')^2 X_1(X_1^2+3X_2^2)\\
+& + \frac{\phi'''s_0^3}{6}  X_1\bigl(X_1^2+3X_2^2\bigr) + \frac{1}{2}(\xi_L(t)-\xi_C(t)) \\[8pt]
+&\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+\tau \dot{X}_2 &= \frac{\phi'}{6}(X_1(\bar{s}_L- \bar{s}_C)+X_2(\bar{s}_L +\bar{s}_C+4\bar{s}_R)+\bar{I}_L +  \bar{I}_C - 2 \bar{I}_R +  R (\bar{s}_L+ \bar{s}_C -2\bar{s}_R) )\\
+& + \frac{s_0\phi''}{6}\Bigl( R(\bar{s}_L+\bar{s}_C+ 4\bar{s}_R) + (\bar{I}_L + \bar{I}_C + 4\bar{I}_R) + \frac{(s_0-cg\phi'_I)}{2cg\phi'_I}(\bar{I}_L+\bar{I}_C+\bar{I}_R + R(\bar{s}_L+ \bar{s}_C+ \bar{s}_R)) \Bigr)X_2\\
+& + \frac{s_0\phi''}{6}(R(\bar{s}_L-\bar{s}_C) + \bar{I}_L - \bar{I}_C) X_1 + \frac{s_0^2\phi''}{6}(X_1^2-3X_2^2) +  \frac{(s_0-cg\phi'_I)}{3cg\phi'_I}s_0^3(\phi'')^2 X_2(X_1^2+3X_2^2) \\
+&+ \frac{\phi'''s_0^3}{6} X_2\bigl(X_1^2+3X_2^2\bigr)  + \frac{1}{6}(\xi_L(t)+\xi_C(t)-2\xi_R(t))\\
+\end{aligned}
+\end{equation}
+
+This system of equations is irrotational, as in the $O(\varepsilon^2)$ case. Thus we can obtain the potential:
+
+\[
+\]
+
+
+
+\begin{equation}
+\begin{aligned}
+\psi(x,y)&= \frac{1}{24 c g \phi_I'} X_{1}^{4} s_{0}^{3} (- 2 c g \phi_I' \phi''^{2} + c g \phi_I' \phi''' + 2 \phi''^{2} s_{0}) + 2 X_{1}^{2} (I_{C} c g \phi_I' \phi'' s_{0}\\
+&+ 2 I_{C} \phi'' s_{0}^{2} + I_{L} c g \phi_I' \phi'' s_{0} + 2 I_{L} \phi'' s_{0}^{2} - 2 I_{R} c g \phi_I' \phi'' s_{0} + 2 I_{R} \phi'' s_{0}^{2} + R c g \phi_I' \phi'' s_{0} s_{C}  \\
+&+ R c g \phi_I' \phi'' s_{0} s_{L} - 2 R c g \phi_I' \phi'' s_{0} s_{R} + 2 R \phi'' s_{0}^{2} s_{C} + 2 R \phi'' s_{0}^{2} s_{L} + 2 R \phi'' s_{0}^{2} s_{R}\\
+& - 6 X_{2}^{2} c g \phi_I' \phi''^{2} s_{0}^{3} + 3 X_{2}^{2} c g \phi_I' \phi''' s_{0}^{3} + 6 X_{2}^{2} \phi''^{2} s_{0}^{4} + 6 X_{2} c g \phi_I' \phi'' s_{0}^{2}  \\
+& + 3 c g \phi_I' \phi' s_{C} + 3 c g \phi_I' \phi' s_{L}) + 9 X_{2}^{4} s_{0}^{3} (- 2 c g \phi_I' \phi''^{2} + c g \phi_I' \phi''' + 2 \phi''^{2} s_{0}) \\
+& + 3 X_{2}^{2} (I_{C} c g \phi_I' \phi'' s_{0} + I_{C} \phi'' s_{0}^{2} + I_{L} c g \phi_I' \phi'' s_{0} + I_{L} \phi'' s_{0}^{2} + 7 I_{R} c g \phi_I' \phi'' s_{0}  \\
+& +   I_{R} \phi'' s_{0}^{2} + R c g \phi_I' \phi'' s_{0} s_{C} + R c g \phi_I' \phi'' s_{0} s_{L} + 7 R c g \phi_I' \phi'' s_{0} s_{R} + R \phi'' s_{0}^{2} s_{C} \\
+& + R \phi'' s_{0}^{2} s_{L} + R \phi'' s_{0}^{2} s_{R} + 2 c g \phi_I' \phi' s_{C} + 2 c g \phi_I' \phi' s_{L} + 8 c g \phi_I' \phi' s_{R}) + 12 c g \phi_I' (- X_{1} (I_{C} X_{2} \phi'' s_{0}\\
+& + I_{C} \phi' - I_{L} X_{2} \phi'' s_{0} - I_{L} \phi' + R X_{2} \phi'' s_{0} s_{C} - R X_{2} \phi'' s_{0} s_{L} + R \phi' s_{C} - R \phi' s_{L} + X_{2} \phi' s_{C}  \\
+& - X_{2} \phi' s_{L}) - X_{2}^{3} \phi'' s_{0}^{2} + X_{2} \phi' (I_{C} + I_{L} - 2 I_{R} + R s_{C} + R s_{L} - 2 R s_{R}))
+\\
+&\end{aligned}
+\end{equation}
 
 
 \end{document}

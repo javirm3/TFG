@@ -1,0 +1,10 @@
+*.png
+*.mp4
+*.jpg
+*.DS_Store
+*.aux
+*.log
+*.pdf
+*.pyc
+*.gif
+*.gz

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.20)  28 MAR 2025 12:02
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.11.20)  3 APR 2025 16:54
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1437,13 +1437,13 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <5> on input line 28.
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 4
-3.
+5.
 
 (/usr/local/texlive/2024/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <14.4> on input line 78.
+(Font)              <14.4> on input line 76.
  [1
 
 {/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
@@ -1454,7 +1454,7 @@ vips/lm/lm-mathsy.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/lm/lm
 -mathex.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
  [2] [3] [4]
 [5]
-Overfull \hbox (3.17026pt too wide) detected at line 360
+Overfull \hbox (3.17026pt too wide) detected at line 359
 \OML/lmm/m/it/10  \OT1/lmr/m/n/10 (\OML/lmm/m/it/10 X[]; X[]\OT1/lmr/m/n/10 ) =
  [](\OML/lmm/m/it/10 X[]X[]^^^[]s[] \OMS/lmsy/m/n/10 ^^@ \OML/lmm/m/it/10 X[]^^
 ^[] [] \OMS/lmsy/m/n/10 ^^@ \OML/lmm/m/it/10 X[]^^^[]s[] \OT1/lmr/m/n/10 + \OML
@@ -1464,20 +1464,9 @@ Overfull \hbox (3.17026pt too wide) detected at line 360
 <plots/potencial.png, id=94, 722.7pt x 505.89pt>
 File: plots/potencial.png Graphic file (type png)
 <use plots/potencial.png>
-Package pdftex.def Info: plots/potencial.png  used on input line 364.
+Package pdftex.def Info: plots/potencial.png  used on input line 363.
 (pdftex.def)             Requested size: 435.32422pt x 304.7251pt.
-[6 <./plots/potencial.png>]
-Overfull \hbox (3.40935pt too wide) detected at line 458
-\OML/lmm/m/it/10 N[] \OT1/lmr/m/n/10 = \OML/lmm/m/it/10 ^^^[] [] \OT1/lmr/m/n/1
-0 + \OML/lmm/m/it/10 ^^^[]s[] [] \OT1/lmr/m/n/10 + [] []
- []
-
-
-Overfull \hbox (3.60306pt too wide) detected at line 480
-[][][][][]
- []
-
-[7] (./model-diffusion.aux)
+[6 <./plots/potencial.png>] [7] [8] (./model-diffusion.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
@@ -1490,9 +1479,9 @@ Package rerunfilecheck Info: File `model-diffusion.out' has not changed.
 (rerunfilecheck)             Checksum: D3FD3CB3E6E2FBB83DFB32B30EC46FB2;1241.
  ) 
 Here is how much of TeX's memory you used:
- 31645 strings out of 474116
- 589603 string characters out of 5743681
- 1954187 words of memory out of 5000000
+ 31649 strings out of 474116
+ 589648 string characters out of 5743681
+ 1956187 words of memory out of 5000000
  53264 multiletter control sequences out of 15000+600000
  611549 words of font info for 117 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1512,10 +1501,10 @@ public/lm/lmsy10.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/lm/
 lmsy5.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/lm/lmsy7.pfb><
 /usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.p
 fb>
-Output written on model-diffusion.pdf (7 pages, 1377792 bytes).
+Output written on model-diffusion.pdf (8 pages, 1380232 bytes).
 PDF statistics:
- 210 PDF objects out of 1000 (max. 8388607)
- 162 compressed objects within 2 object streams
- 44 named destinations out of 1000 (max. 500000)
+ 217 PDF objects out of 1000 (max. 8388607)
+ 168 compressed objects within 2 object streams
+ 48 named destinations out of 1000 (max. 500000)
  30786 words of extra memory for PDF output out of 35830 (max. 10000000)
 
