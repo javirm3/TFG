@@ -5,6 +5,7 @@
 *.aux
 *.log
 *.pdf
+*.out
 *.pyc
 *.gif
 *.gz
