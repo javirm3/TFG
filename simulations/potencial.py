@@ -5,7 +5,7 @@ import pickle
 
 def get_expressions(values, type='numeric', substituted_I=False):  
     X1, X2 = sp.symbols('X1 X2')
-    tau, phi_p, phi_pp, phi_ppp, s0, c, g, phi_Ip = sp.symbols('tau phi_p phi_pp phi_ppp s0 c g phi_Ip')
+    phi_p, phi_pp, phi_ppp, s0, c, g, phi_Ip = sp.symbols('phi_p phi_pp phi_ppp s0 c g phi_Ip')
     I_L, I_C, I_R, s_L, s_C, s_R, R = sp.symbols('I_L I_C I_R s_L s_C s_R R')
     x = sp.symbols('x', real=True)
     R_I, I0, I_I = sp.symbols('R_I I0 I_I', real=True)
@@ -17,7 +17,8 @@ def get_expressions(values, type='numeric', substituted_I=False):
     with open('phis.pkl', 'rb') as f:
         phis = pickle.load(f)
 
-    F1, F2 = exprs['F1'], 3*exprs['F2']
+    F1, F2 = (1/values["tau"])*exprs['F1'], (3/values["tau"])*exprs['F2']
+    U_simpl = (1/values["tau"])*U_simpl
     phi_X0 = phis['phi_X0']
     phi_prime_X0 = phis['phi_X0_p']
     phi_double_prime_X0 = phis['phi_X0_pp']

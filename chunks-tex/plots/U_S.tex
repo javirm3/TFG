@@ -5,12 +5,12 @@
 \usetikzlibrary{decorations.pathreplacing,arrows.meta}
 
 % Definición de colores personalizados
-\definecolor{lila}{RGB}{128,0,128}
-\definecolor{amarillo}{RGB}{255,215,0}
+\definecolor{lila}{RGB}{152,78,163}
+\definecolor{amarillo}{RGB}{255,127,0}
 
 \begin{document}
 \begin{tikzpicture}
-  % Parámetros
+
   \pgfmathsetmacro{\Uonset}{0.5}
   \pgfmathsetmacro{\Uoffset}{1.5}
   \pgfmathsetmacro{\Uamp}{3}
@@ -33,14 +33,14 @@
   ]
 
     % U_t(t) con color lila
-    \addplot[lila, thick] 
+    \addplot[lila, very thick] 
       ({x}, { x<\Uonset || x>\Uonset+\Uoffset 
                ? -1 
                : -1 + \Uamp*(x-\Uonset)/\Uoffset });
     \addlegendentry{$U(t)$}
 
     % S(t) con color amarillo
-    \addplot[amarillo, thick]
+    \addplot[amarillo, very thick]
       ({x}, { x<\Stimonset || x>\Stimonset+\Stimoffset 
                ? 0 
                : \Stimamp });
