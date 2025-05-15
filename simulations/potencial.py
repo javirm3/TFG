@@ -62,7 +62,7 @@ def get_expressions(values, type='numeric', substituted_I=False):
 
     x0 = [1/4, 1/4, 1/2]
     R_val, R_I_val, I0_val = fsolve(fun, x0)
-
+    
 
     phi_p_val = sp.N(phi_prime_X0.subs({R: R_val, R_I: R_I_val, I0: I0_val, s0: values['s0'], c: values['c'], g: values['g']}))
     phi_pp_val = sp.N(phi_double_prime_X0.subs({R: R_val, R_I: R_I_val, I0: I0_val, s0: values['s0'], c: values['c'], g: values['g']}))
