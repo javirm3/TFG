@@ -17,7 +17,7 @@ def get_expressions(values, type='numeric', substituted_I=False):
     with open('phis.pkl', 'rb') as f:
         phis = pickle.load(f)
 
-    F1, F2 = (1/values["tau"])*exprs['F1'], (3/values["tau"])*exprs['F2']
+    F1, F2 = (1/values["tau"])*exprs['F1'], (1/values["tau"])*exprs['F2']
     U_simpl = (1/values["tau"])*U_simpl
     phi_X0 = phis['phi_X0']
     phi_prime_X0 = phis['phi_X0_p']
