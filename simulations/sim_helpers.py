@@ -1,6 +1,7 @@
 # sim_helpers.py
 import numpy as np
 import multiprocessing as mp
+from sim_helpers_dynamic import simulate_path_side 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
 from potencial import get_expressions
@@ -26,7 +27,7 @@ def simulate_path(x0,
                   U_params,
                   drift,
                   noise_amp=1,
-                  Tmax=2,
+                  Tmax=2.1,
                   dt=0.1/40):
     """
     Euler–Maruyama con drift dinámico:
@@ -168,3 +169,72 @@ def parallel_sweep_general(
 
     return p, p_err
 
+
+def _worker_offset_side(args):
+    """
+    args = (i, j, side, S_p, U_p, drift_params, x0, n_trajs,
+            noise_amp, Tmax, dt, mapping)
+    """
+    from potencial import get_expressions
+    from sim_helpers_dynamic import simulate_path_side
+    import numpy as np
+
+    i, j, side, S_p, U_p, drift_params, x0, n_trajs, noise_amp, Tmax, dt, mapping = args
+
+    # reconstruyo drift_fn aquí, usando get_expressions
+    _, F1n, F2n, _ = get_expressions(
+        drift_params, type="numeric", substituted_I=False
+    )
+    drift_fn = lambda X, iL, iC, iR: np.array([
+        F1n(X[0], X[1], iL, iC, iR),
+        F2n(X[0], X[1], iL, iC, iR)
+    ])
+
+    wins = 0
+    for _ in range(n_trajs):
+        _, winner = simulate_path_side(
+            x0, side, S_p, U_p,
+            drift_fn,
+            noise_amp=noise_amp,
+            Tmax=Tmax,
+            dt=dt
+        )
+        if mapping[winner] == side:
+            wins += 1
+    return i, j, wins
+
+
+def parallel_offset_side(
+    offsets, sides, mapping,
+    S_params_def, U_params_def,
+    init_drift_params, drift_factory,
+    x0, n_trajs, Tmax, dt, noise_amp=0.5,
+    n_workers=None
+):
+    # precomputas drift_params pero ya no drift_fn
+    if n_workers is None:
+        n_workers = max(1, mp.cpu_count()-6)
+
+    jobs = []
+    for i, side in enumerate(sides):
+        for j, offset in enumerate(offsets):
+            S_p = {**S_params_def, 'offset':offset}
+            U_p = {**U_params_def}
+            jobs.append((
+                i, j, side, S_p, U_p,
+                init_drift_params.copy(),
+                x0, n_trajs, noise_amp,
+                Tmax, dt, mapping
+            ))
+
+    p = np.zeros((len(sides), len(offsets)))
+
+    with ProcessPoolExecutor(max_workers=n_workers) as exe:
+        for i, j, wins in tqdm(
+            exe.map(_worker_offset_side, jobs),
+            total=len(jobs),
+            desc="Sweep offsets×sides"
+        ):
+            p[i, j] = wins / n_trajs
+
+    return p
