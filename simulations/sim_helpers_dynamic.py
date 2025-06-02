@@ -20,7 +20,17 @@ def S_t(t, onset=0.30, offset=2, duration = -1 , amplitude=0.1):
     if duration < 0:
         duration = offset - onset
     return np.where(np.logical_or(t < onset, t > onset + duration), 0, amplitude)
-
+def S_t(t, onset=0.30, offset=2, duration=-1, amplitude=0.1, d=0.5):
+    if duration < 0:
+        duration = offset - onset
+    S_base = np.where((t >= onset) & (t <= onset + duration), amplitude, 0)
+    tail_start = onset + duration
+    tail = np.where(
+        (t>=tail_start)&(t<=tail_start+d),
+        amplitude*np.exp(-3*(t-tail_start)/d),
+        0
+    )       
+    return np.maximum(S_base, tail)
 
 def simulate_path(x0, S_params, U_params, Tmax = 2, dt = 0.1/40, noise_amp = 1, drift = None):
     N = int(Tmax / dt)

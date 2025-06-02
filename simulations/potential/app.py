@@ -139,7 +139,6 @@ def create_interactive_3d_plot(parameters):
     high_threshold = 20.0
     Z = np.clip(Z, low_threshold, high_threshold)
     
-    # Crear figura interactiva con Plotly
     fig = go.Figure(data=[go.Surface(x=X, y=Y, z=Z, colorscale='Viridis')])
     fig.update_layout(
         title="Potential ψ(X₁,X₂)",

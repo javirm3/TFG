@@ -14,12 +14,23 @@ def U_t(t, onset=0.5, offset=1.5, duration=-1, amplitude=2):
                     -1,
                     -1 + amplitude * (t - onset) / duration)
 
-def S_t(t, onset=0.30, offset=2, duration=-1, amplitude=0.1):
+# def S_t(t, onset=0.30, offset=2, duration=-1, amplitude=0.1):
+#     if duration < 0:
+#         duration = offset - onset
+#     return np.where((t < onset) | (t > onset + duration),
+#                     0,
+#                     amplitude)
+def S_t(t, onset=0.30, offset=2, duration=-1, amplitude=0.1, d=0.5):
     if duration < 0:
         duration = offset - onset
-    return np.where((t < onset) | (t > onset + duration),
-                    0,
-                    amplitude)
+    S_base = np.where((t >= onset) & (t <= onset + duration), amplitude, 0)
+    tail_start = onset + duration
+    tail = np.where(
+        (t>=tail_start)&(t<=tail_start+d),
+        amplitude*np.exp(-3*(t-tail_start)/d),
+        0
+    )       
+    return np.maximum(S_base, tail)
 
 # ———————— simulador de una sola trayectoria ————————
 def simulate_path(x0,
@@ -83,7 +94,7 @@ def simulate_batch_general(args):
      drift_params,
      drift_factory,
      update_drift_fn,
-     x0, n_trajs, Tmax) = args
+     x0, n_trajs, Tmax, noise_amp) = args
 
     wins = {'r1':0, 'r2':0, 'r3':0, 'none':0}
     if update_drift_fn is None:
@@ -98,7 +109,7 @@ def simulate_batch_general(args):
             S_params=S_params,
             U_params=U_params,
             drift=drift_fn,
-            noise_amp=0.5,
+            noise_amp=noise_amp,
             Tmax=Tmax
         )
         wins[w] += 1
@@ -117,6 +128,7 @@ def parallel_sweep_general(
     U_params_def,
     x0,
     Tmax,
+    noise_amp,
     n_trajs,
     init_drift_params,         # dict inicial para drift_factory
     drift_factory,            # fn(drift_params)->drift_fn
@@ -148,7 +160,7 @@ def parallel_sweep_general(
             init_drift_params.copy(),
             drift_factory,
             update_drift_fn,
-            x0, n_trajs, Tmax
+            x0, n_trajs, Tmax, noise_amp
         ))
 
     # workers por defecto = cores físicos - 1
