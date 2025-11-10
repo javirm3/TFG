@@ -11,3 +11,6 @@
 *.gz
 *.stl
 *.svg
+*.key
+/simulations/datasets/
+*/code/fitting/statprof

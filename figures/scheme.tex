@@ -9,9 +9,11 @@
 \definecolor{cb3}{HTML}{377EB8}    % ColorBrewer Set1 - Blue
 \definecolor{cb4}{HTML}{999999}    % ColorBrewer Set1 - Gray
 \usetikzlibrary{arrows.meta, positioning, calc}
+\tikzset{>={Circle[open,width=6pt,length=6pt]}} 
 \usepackage{amsmath}
 \begin{document}
 \begin{tikzpicture}[>=Stealth,
+ conn/.style={line width=2pt},
   neuron/.style={
     draw,
     circle,
@@ -35,25 +37,38 @@
   \node[neuron, fill=cb4] (I) at (0,2.309) {I};
 
   % Self-loops
-  \draw[->, thick] (L) edge[loop left] node[arrowlabel, left] {$s_L$} (L);
-  \draw[->, thick] (C) edge[loop above] node[arrowlabel, above] {$s_C$} (C);
-  \draw[->, thick] (R) edge[loop right] node[arrowlabel, right] {$s_R$} (R);
+  \draw[->,conn] (L) edge[loop left] node[arrowlabel, left] {$s_L$} (L);
+  \draw[->, conn] (C) edge[loop above] node[arrowlabel, above] {$s_C$} (C);
+  \draw[->, conn] (R) edge[loop right] node[arrowlabel, right] {$s_R$} (R);
 
   % E → I connections
-  \draw[->, thick, bend left=20] (L) edge node[arrowlabel, above] {$\tfrac{g}{3}$} (I);
-  \draw[->, thick, bend left=20] (C) edge node[arrowlabel, right] {$\tfrac{g}{3}$} (I);
-  \draw[->, thick, bend left=20] (R) edge node[arrowlabel, left, xshift = -10pt, yshift = -10pt] {$\tfrac{g}{3}$} (I);
+  \draw[->, conn, bend left=20] (L) edge node[arrowlabel, above] {$\tfrac{g}{3}$} (I);
+  \draw[->, conn, bend left=20] (C) edge node[arrowlabel, right] {$\tfrac{g}{3}$} (I);
+  \draw[->, conn, bend left=20] (R) edge node[arrowlabel, left, xshift = -10pt, yshift = -10pt] {$\tfrac{g}{3}$} (I);
 
   % I → E feedback
-  \draw[->, thick, bend left=20] (I) edge node[arrowlabel, right, xshift = 5pt] {$c$} (L);
-  \draw[->, thick, bend left=20] (I) edge node[arrowlabel, left] {$c$} (C);
-  \draw[->, thick, bend left=20] (I) edge node[arrowlabel, right, xshift = 5pt, yshift = 5pt] {$c$} (R);
+  \draw[-{Circle[]}, conn, bend left=20] (I) edge node[arrowlabel, right, xshift = 5pt] {$c$} (L);
+  \draw[-{Circle[]}, conn, bend left=20] (I) edge node[arrowlabel, left] {$c$} (C);
+  \draw[-{Circle[]}, conn, bend left=20] (I) edge node[arrowlabel, right, xshift = 5pt, yshift = 5pt] {$c$} (R);
 
   % External inputs (dashed)
-  \draw[->, dashed, thick] ($(L)+(0,3)$) -- (L) node[arrowlabel, pos = 0, yshift = 10pt ] {$I_L+I_0$};
-  \draw[->, dashed, thick] ($(C)+(3,0)$) -- (C) node[arrowlabel, pos = 0, yshift = 15pt] {$I_C+I_0$};
-  \draw[->, dashed, thick] ($(R)+(0,3)$) -- (R) node[arrowlabel, pos = 0, yshift = 10pt ]  {$I_R+I_0$};
-  \draw[->, dashed, thick] ($(I)+(0,-3)$) -- (I) node[arrowlabel, pos = 0, below] {$I_I$};
+% \coordinate (In) at (0,-6);
+%\draw[->, dashed, thick] (In) to[out=90, in=225] node[arrowlabel, pos=0.8, left=5pt] {$I_L$} (L);
+%\draw[->, dashed, thick] (In) to[out=90, in=200] node[arrowlabel, pos=0.8, left=5pt] {$I_C$} (C);
+%  \draw[->, dashed, thick] (In) to[out=90, in=315] node[arrowlabel, pos=0.8, right=5pt] {$I_R$} (R);
+% \draw[->, dashed, thick] (In) to[out=90, in=270] node[arrowlabel, pos=0.6, right=5pt] {$I_I$} (I);
+ 
+  % Nodo común de entrada sensorial desde la derecha
+  % Nodo común de entrada sensorial a la derecha, a media altura
+  \coordinate (In) at (13,2.3);
+
+  \draw[->, dashed, thick] (In) to[out=210, in=320] node[arrowlabel, pos=0.9, above] {$I_L$} (L);
+  \draw[->, dashed, thick] (In) to[out=180, in=315] node[arrowlabel, pos=0.7, above] {$I_C$} (C);
+  \draw[->, dashed, thick] (In) to[out=180, in=0] node[arrowlabel, pos=0.75, above] {$I_I$} (I);
+  \draw[->, dashed, thick] (In) to[out=180, in=25] node[arrowlabel, pos=0.7, below right] {$I_R$} (R);
+
+
+
 
 \end{tikzpicture}
 

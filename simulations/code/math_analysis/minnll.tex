@@ -1,0 +1,175 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{graphicx}
+\geometry{margin=2.5cm}
+\setlength{\parskip}{0.9em}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\section*{Negative Log-Likelihood and its Lower Bound}
+
+Let $C \in \{L, C, R\}$ denote the subject's choice and $S$ the stimulus or condition.
+A stochastic model with parameters $\theta$ defines conditional probabilities
+$q_\theta(c \mid s)$.
+Given data $\{(c_i, s_i)\}_{i=1}^N$, the mean negative log-likelihood (NLL)
+per trial is
+
+\[
+\overline{\mathrm{NLL}}(\theta)
+= -\frac{1}{N}\sum_{i=1}^N \log q_\theta(c_i \mid s_i).
+\]
+
+Under the i.i.d.\ assumption, the empirical mean converges to its expected value:
+
+\[
+\overline{\mathrm{NLL}}(\theta)
+\xrightarrow[]{N\to\infty}
+-\mathbb{E}_{p(C,S)}[\log q_\theta(C \mid S)]
+= H(p(C \mid S), q_\theta(C \mid S)),
+\]
+
+which is the \emph{cross-entropy} between the subject’s true conditional
+distribution $p(C \mid S)$ and the model’s predicted probabilities
+$q_\theta(C \mid S)$.
+
+According to Cover and Thomas (2006, Sec.~2.6), the cross-entropy decomposes as
+
+\[
+H(p(C \mid S), q_\theta(C \mid S))
+= H(C \mid S)
++ \mathbb{E}_{s\sim p}\!\left[
+D_{\mathrm{KL}}(p(\cdot \mid s)\, \|\, q_\theta(\cdot \mid s))
+\right],
+\]
+
+where $D_{\mathrm{KL}}$ denotes the Kullback–Leibler divergence
+Since $D_{\mathrm{KL}} \ge 0$, it follows that
+
+\[
+\boxed{\overline{\mathrm{NLL}}(\theta) \ge H(C \mid S)}
+\qquad
+\text{with equality iff } q_\theta(c \mid s) = p(c \mid s) \;\forall c,s.
+\]
+
+The lower bound $H(C \mid S)$, the \emph{conditional entropy}, is defined as
+
+\[
+H(C \mid S)
+= -\sum_s p(s) \sum_{c\in\{L,C,R\}} p(c \mid s) \log p(c \mid s),
+\]
+measured in nats.
+
+To estimate $H(C \mid S)$ empirically, let $n_s$ be the number of trials with
+stimulus $s$, $n_{c \mid s}$ the number of times the subject chose $c$
+given $s$, and $N = \sum_s n_s$.
+Empirical frequencies are
+\[
+\hat{p}(s) = \frac{n_s}{N}, \qquad
+\hat{p}(c \mid s) = \frac{n_{c \mid s}}{n_s} \quad (n_s > 0).
+\]
+The plug-in estimator of the conditional entropy is then
+\[
+\widehat{H}(C \mid S)
+= -\sum_s \hat{p}(s)
+  \sum_c \hat{p}(c \mid s)\, \log \hat{p}(c \mid s),
+\]
+where the convention $0\log0 \equiv 0$ is used.
+
+For $K=3$ equiprobable alternatives (chance level), the reference NLL is
+\[
+\mathrm{NLL}_{\text{chance}} = \log K = \log 3 \approx 1.099
+\ \text{nats per trial.}
+\]
+The subject’s intrinsic noise limits the explainable information, determined by
+$H(C \mid S)$.
+
+A normalized fit metric can be defined as
+\[
+\mathrm{Fit}_{\text{ceiling}}
+= 1 -
+\frac{\overline{\mathrm{NLL}}(\theta) - \widehat{H}(C \mid S)}
+{\log K - \widehat{H}(C \mid S)} \in [0,1],
+\]
+where 0 corresponds to chance level and 1 corresponds to a perfect fit
+to the subject’s behavior.
+
+If $q_\theta(c \mid s)$ is estimated via Monte Carlo simulation with $M$
+trajectories (and smoothing $\alpha$), the empirical probability used in the loss is
+$\widehat{q}(c \mid s) = \frac{m_c+\alpha}{M+K\alpha}$.
+This introduces a small positive bias in the NLL;
+in the limit $M\!\to\!\infty$ and $\alpha\!\to\!0$,
+$\overline{\mathrm{NLL}}(\theta)$ converges to the theoretical bound above.
+
+
+\subsection*{Monte Carlo Estimation of the Cross-Entropy}
+
+The theoretical cross-entropy between the true behavior $p(c\mid s)$ and the
+model prediction $q_\theta(c\mid s)$ is
+\[
+H(p,q_\theta)
+= -\mathbb{E}_{(c,s)\sim p}\,[\log q_\theta(c\mid s)].
+\]
+When $q_\theta(c\mid s)$ cannot be computed analytically, it can be estimated
+via Monte Carlo simulation with $M$ stochastic trajectories per condition:
+\[
+\widehat{q}_\theta(c\mid s)
+= \frac{m_c + \alpha}{M + K\alpha},
+\]
+where $m_c$ is the number of simulated choices equal to $c$,
+$K$ is the number of possible choices, and $\alpha$ is a small smoothing term.
+Replacing $q_\theta$ by $\widehat q_\theta$ in the definition yields the
+Monte Carlo estimator of the cross-entropy:
+\[
+\widehat{H}_{MC}(p,q_\theta)
+= -\frac{1}{N}\sum_{i=1}^N \log \widehat q_\theta(c_i\mid s_i)
+\approx H(p,q_\theta).
+\]
+As $M\!\to\!\infty$, $\widehat q_\theta(c\mid s)\!\to\! q_\theta(c\mid s)$ and
+$\widehat{H}_{MC}(p,q_\theta)\!\to\! H(p,q_\theta)$.
+For finite $M$, the estimator is slightly biased upwards due to Jensen's
+inequality, with bias $\mathcal{O}(1/M)$
+(MacKay, 2003; Bishop, 2006; Cover \& Thomas, 2006).
+
+\subsection*{Effect of Subsampling and Reweighting}
+
+In practice, behavioral datasets are often subsampled or balanced
+across conditions to obtain approximately uniform trial counts.
+Let $\tilde p(s)$ denote the empirical frequency of each condition $s$
+after subsampling.
+Then the estimated cross-entropy becomes
+\[
+\widehat{H}^{(\text{sub})}_{MC}(p,q_\theta)
+= -\sum_s \tilde p(s)\!
+   \sum_c \hat p(c\mid s)\, \log \widehat q_\theta(c\mid s),
+\]
+where $\hat p(c\mid s)$ are the observed conditional frequencies.
+Subsampling therefore modifies the weighting $\tilde p(s)$
+but not the conditional terms $\hat p(c\mid s)$.
+As long as the same weighting is used when computing both
+$\overline{\mathrm{NLL}}(\theta)$ and $\widehat H(C\mid S)$,
+the inequality
+\[
+\overline{\mathrm{NLL}}(\theta)
+\;\ge\; H(C\mid S)
+\]
+remains valid up to sampling noise.
+Different subsampling schemes simply change the effective mixture of
+conditions $s$ over which the cross-entropy is averaged,
+but do not alter the theoretical relationship between
+the NLL and the conditional entropy bound.
+
+\vspace{1em}
+\textbf{References}
+
+Cover, T.\,M. \& Thomas, J.\,A. (2006).
+\emph{Elements of Information Theory} (2nd ed.).
+Wiley.\\
+Bishop, C.\,M. (2006).
+\emph{Pattern Recognition and Machine Learning}.
+Springer.\\
+MacKay, D.\,J.\,C. (2003).
+\emph{Information Theory, Inference, and Learning Algorithms}.
+Cambridge University Press.
+
+\end{document}
