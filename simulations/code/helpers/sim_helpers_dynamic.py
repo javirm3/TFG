@@ -1,6 +1,6 @@
 # sim_helpers.py
 import numpy as np
-from potencial import get_expressions
+from math_analysis.potencial import get_expressions
 import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -15,6 +15,18 @@ def U_t(t, onset=0.5, offset=1.5, duration=-1, amplitude=2):
     if duration <= 0:
         duration = offset - onset
     return np.where((t < onset) | (t > onset + duration), -1, -1 + amplitude * (t - onset) / duration)
+
+def U_t(t, U_amp, U_base, t1, t2, t3, t4):
+    w1 = 1.0 / (t1 - 0.0)
+    w2 = 1.0 / (t2 - t1)
+    w3 = 1.0 / (t3 - t2)
+    w4 = 1.0 / (t4 - t3)
+    r1 = np.clip(t * w1,            0.0, 1.0)
+    r2 = np.clip((t - t1) * w2,     0.0, 1.0)
+    r3 = np.clip((t - t2) * w3,     0.0, 1.0)
+    r4 = np.clip((t - t3) * w4,     0.0, 1.0)
+    return U_base + 0.25 * U_amp * (r1 + r2 + r3 + r4)
+
 
 def S_t(t, onset=0.30, offset=2, duration = -1 , amplitude=0.1):
     if duration < 0:

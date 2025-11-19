@@ -1,32 +1,44 @@
 module SimNLL
 # θ = [sL, sC, sR, noise_amp, S_amp, dS, U_amp, U_base, U_on]
 
-export nll_trials, onset_offset_from_codes, rng_mode
+export nll_trials, onset_offset_from_codes
 
 using Random
 using Base.Threads
 
 
 # ===================== Buffers globales por hilo (tamaño fijo) =====================
+const _S_tls  = Ref(Vector{Vector{Float64}}())   # vector de vectores, inicialmente vacío
+const _U_tls  = Ref(Vector{Vector{Float64}}())
+const _Z0_tls = Ref(Vector{Vector{Float64}}())
+const _Z1_tls = Ref(Vector{Vector{Float64}}())
+const _Z2_tls = Ref(Vector{Vector{Float64}}())
+const _Z3_tls = Ref(Vector{Vector{Float64}}())
+const _rng_tls = Ref(Vector{Xoshiro}())
 const _buffers_init = Ref(false)
-const _S_tls  = Ref{Vector{Vector{Float64}}}()
-const _U_tls  = Ref{Vector{Vector{Float64}}}()
-const _Z0_tls = Ref{Vector{Vector{Float64}}}()
-const _Z1_tls = Ref{Vector{Vector{Float64}}}()
-const _Z2_tls = Ref{Vector{Vector{Float64}}}()
 
-const _rng_tls = Ref{Vector{Xoshiro}}()
+# const _rng_tls = Ref{Vector{Xoshiro}}()
 const _tls = Ref(Vector{Float64}())
 
-function _init_buffers_if_needed(Nmax::Int)
+function _init_buffers_if_needed(Nhint::Int)
     if !_buffers_init[]
-        nthreads = Threads.nthreads()
-        _S_tls[]  = [zeros(Float64, Nmax) for _ in 1:nthreads]
-        _U_tls[]  = [zeros(Float64, Nmax) for _ in 1:nthreads]
-        _Z0_tls[] = [zeros(Float64, Nmax) for _ in 1:nthreads]
-        _Z1_tls[] = [zeros(Float64, Nmax) for _ in 1:nthreads]
-        _Z2_tls[] = [zeros(Float64, Nmax) for _ in 1:nthreads]
-        _rng_tls[] = [Xoshiro(0x12345678 + i) for i in 1:nthreads]
+        nt = Threads.nthreads()
+        _S_tls[]  = [Vector{Float64}(undef, 0) for _ in 1:nt]
+        _U_tls[]  = [Vector{Float64}(undef, 0) for _ in 1:nt]
+        _Z0_tls[] = [Vector{Float64}(undef, 0) for _ in 1:nt]
+        _Z1_tls[] = [Vector{Float64}(undef, 0) for _ in 1:nt]
+        _Z2_tls[] = [Vector{Float64}(undef, 0) for _ in 1:nt]
+        _Z3_tls[] = [Vector{Float64}(undef, 0) for _ in 1:nt]
+        let rd = RandomDevice()
+            _rng_tls[] = [Xoshiro(rand(rd, UInt64)) for _ in 1:nt]
+        end
+        # Sugerencia: reserva inicial para evitar realojos frecuentes
+        for v in _S_tls[];  sizehint!(v, Nhint); end
+        for v in _U_tls[];  sizehint!(v, Nhint); end
+        for v in _Z0_tls[]; sizehint!(v, Nhint); end
+        for v in _Z1_tls[]; sizehint!(v, Nhint); end
+        for v in _Z2_tls[]; sizehint!(v, Nhint); end
+        for v in _Z3_tls[]; sizehint!(v, Nhint); end
         _buffers_init[] = true
     end
 end
@@ -59,7 +71,7 @@ end
     end
 end
 
-@inline function U_value(t, amp, base, onset, offset)
+@inline function U_temporal_value(t, amp, base, onset, offset)
     D = offset - onset
     if D <= 0.0 || t < onset || t > offset
         return base
@@ -67,6 +79,32 @@ end
         return base + amp * (t - onset) / D
     end
 end
+
+@inline function U_spatial_value(t::Float64, U_amp::Float64, U_base::Float64,
+                                 t1::Float64, t2::Float64, t3::Float64, t4::Float64,
+                                 w1::Float64, w2::Float64, w3::Float64, w4::Float64)
+    # ramp01(x) = clamp(x,0,1)
+    r1 = clamp(t * w1,              0.0, 1.0)
+    r2 = clamp((t - t1) * w2,       0.0, 1.0)
+    r3 = clamp((t - t2) * w3,       0.0, 1.0)
+    r4 = clamp((t - t3) * w4,       0.0, 1.0)
+    return muladd(0.25 * U_amp, (r1 + r2 + r3 + r4), U_base)
+end
+
+@inline function U_ext_value(t, amp, onset, offset)
+    return (t < onset) ? 0.0 : amp
+end
+
+@inline function phi(x::Float64)
+    if x <= 0.0
+        return 0.0
+    elseif x <= 1.0
+        return x * x
+    else
+        return 2.0 * sqrt(x - 0.75)
+    end
+end
+
 
 # ===================== Drift =====================
 # @inline function drift(x1, x2, IL, IC, IR, sL, sC, sR)
@@ -149,18 +187,91 @@ const _buf_lock = ReentrantLock()
 end
 
 # ===================== Relleno S/U =====================
-using LoopVectorization
+# using LoopVectorization
 @inline function fill_SU!(S_t::Vector{Float64}, U_t::Vector{Float64}, N::Int,
                           dt::Float64, S_amp::Float64, dS::Float64,
                           onset::Float64, offset::Float64,
-                          U_amp::Float64, Ubase::Float64, U_on::Float64, t4i::Float64)
-    @inbounds @simd  for k in 1:N
+                          U_amp::Float64, Ubase::Float64,
+                          t1i::Float64, t2i::Float64, t3i::Float64, t4i::Float64)
+    w1 = inv(t1i - 0.0)
+    w2 = inv(t2i - t1i)
+    w3 = inv(t3i - t2i)
+    w4 = inv(t4i - t3i)
+
+    @inbounds @simd for k in 1:N
         tt = (k - 1) * dt
         S_t[k] = S_value(tt, S_amp, dS, onset, offset)
-        U_t[k] = U_value(tt, U_amp, Ubase, U_on, t4i)
+        U_t[k] = U_spatial_value(tt, U_amp, Ubase, t1i, t2i, t3i, t4i, w1, w2, w3, w4)
     end
     return nothing
 end
+
+
+@inline function _heun_pop4_side!(
+    S_t::Vector{Float64}, U_t::Vector{Float64}, N::Int,
+    sL::Float64, sC::Float64, sR::Float64,
+    dt::Float64, th1::Float64, th2::Float64, th3::Float64,
+    Z0::Vector{Float64}, Z1::Vector{Float64}, Z2::Vector{Float64},
+    Z3::Vector{Float64}, side::Int8;
+    τ::Float64 = 0.1, c::Float64 = 1.0, g::Float64 = 1.0,
+    I_I::Float64 = 1/3, noise_amp::Float64 = 0.0)
+
+    # estados
+    rL = 0.0; rC = 0.0; rR = 0.0; rI = 0.0
+    invτ = 1.0/τ
+    √dt = sqrt(dt)
+
+    @inbounds for i in 1:N
+        Sval = S_t[i]; Uval = U_t[i]
+        # Inputs por lado (idéntico a tus Heun_*):
+        if side == 0
+            IL = Sval + Uval; IC = Uval;       IR = Uval
+        elseif side == 1
+            IL = Uval;       IC = Sval + Uval; IR = Uval
+        else
+            IL = Uval;       IC = Uval;        IR = Sval + Uval
+        end
+
+        # Ruido simple e independiente (reutilizando buffers)
+        z0 = Z0[i]; z1 = Z1[i]; z2 = Z2[i]; z3 = Z3[i]
+        ξL = noise_amp * z0 * √dt
+        ξC = noise_amp * z1 * √dt
+        ξR = noise_amp * z2 * √dt
+        ξI = noise_amp * z3 * √dt
+
+        # --- predictor ---
+        fL = invτ*(-rL + phi(sL*rL - c*rI + IL))
+        fC = invτ*(-rC + phi(sC*rC - c*rI + IC))
+        fR = invτ*(-rR + phi(sR*rR - c*rI + IR))
+        fI = invτ*(-rI + phi((g/3.0)*(rL + rC + rR) + I_I))
+
+        rLp = rL + fL*dt + ξL
+        rCp = rC + fC*dt + ξC
+        rRp = rR + fR*dt + ξR
+        rIp = rI + fI*dt + ξI
+
+        # --- corrector ---
+        fL2 = invτ*(-rLp + phi(sL*rLp - c*rIp + IL))
+        fC2 = invτ*(-rCp + phi(sC*rCp - c*rIp + IC))
+        fR2 = invτ*(-rRp + phi(sR*rRp - c*rIp + IR))
+        fI2 = invτ*(-rIp + phi((g/3.0)*(rLp + rCp + rRp) + I_I))
+
+        rL = rL + 0.5*(fL + fL2)*dt + ξL
+        rC = rC + 0.5*(fC + fC2)*dt + ξC
+        rR = rR + 0.5*(fR + fR2)*dt + ξR
+        rI = rI + 0.5*(fI + fI2)*dt + ξI
+    end
+
+    # lectura de decisión (mismo “readout” que tenías con x1,x2)
+    r1 =  rL                    # “Left”
+    r2 =  rC                    # “Center”
+    r3 =  rR                    # “Right”
+    return (r1 > r2 && r1 > r3 && r1 > th1) ? 0 :
+           (r2 > r1 && r2 > r3 && r2 > th2) ? 1 :
+           (r3 > r1 && r3 > r2 && r3 > th3) ? 2 : -1
+end
+
+
 
 # ===================== Heun especializados por side (sin ramas por paso) =====================
 # Generan ruido desde buffers Z0/Z1/Z2 ya rellenos con randn!
@@ -231,7 +342,6 @@ end
 end
 
 # ===================== NLL paralelizado =====================
-const rng_mode = (; CRN = :crn, Independent = :independent)
 
 function nll_trials(stimd::Vector{Int8}, delayd::Vector{Int8}, side::Vector{Int8},
                     resp::Vector{Int8},
@@ -239,14 +349,14 @@ function nll_trials(stimd::Vector{Int8}, delayd::Vector{Int8}, side::Vector{Int8
                     t3::Vector{Float64}, t4::Vector{Float64},
                     theta::Vector{Float64}, M::Int, dt::Float64, alpha::Float64,
                     th1::Float64, th2::Float64, th3::Float64,
-                    seeds::Vector{UInt64};
-                    rng_mode::Symbol = :crn)
+                    seeds::Vector{UInt64}; use_pop4::Bool = false)
     @inbounds begin
         sL, sC, sR   = theta[1], theta[2], theta[3]
         noise_amp    = theta[4]
         S_amp, dS    = theta[5], theta[6]
         U_amp, Ubase = theta[7], theta[8]
-        U_on         = theta[9]
+        # U_on         = theta[9]
+        U_ext_amp    = (length(theta) >= 9) ? theta[9] : 0.0
     end
     Nmax = Int(floor(maximum(t4) / dt))
     _init_buffers_if_needed(Nmax)
@@ -295,28 +405,40 @@ function nll_trials(stimd::Vector{Int8}, delayd::Vector{Int8}, side::Vector{Int8
         N = Int(floor(t4[i] / dt))
 
         # Buffers por hilo (reutilizados) - UNA VEZ
-        S_t = zeros(Float64, N)
-        U_t = zeros(Float64, N)
-        Z0  = zeros(Float64, N)
-        Z1  = zeros(Float64, N)
-        Z2  = zeros(Float64, N)
+        S_t = _S_tls[][tid];  resize!(S_t, N)
+        U_t = _U_tls[][tid];  resize!(U_t, N)
+        Z0  = _Z0_tls[][tid]; resize!(Z0,  N)
+        Z1  = _Z1_tls[][tid]; resize!(Z1,  N)
+        Z2  = _Z2_tls[][tid]; resize!(Z2,  N)
+        Z3  = _Z3_tls[][tid]; resize!(Z3,  N)
 
+        w1 = inv(t1[i])
+        w2 = inv(t2[i] - t1[i])
+        w3 = inv(t3[i] - t2[i])
+        w4 = inv(t4[i] - t3[i])
         @inbounds @simd for k in 1:N
             tt = (k - 1) * dt
             S_t[k] = S_value(tt, S_amp, dS, onset, offset)
-            U_t[k] = U_value(tt, U_amp, Ubase, U_on, t4[i])
+            U_t[k] = U_spatial_value(tt, U_amp, Ubase, t1[i], t2[i], t3[i], t4[i], w1, w2, w3, w4) + U_ext_value(tt, U_ext_amp, onset, t4[i])
         end
         mL = 0; mC = 0; mR = 0
 
         rng = _rng_tls[][tid]
         @inbounds for j in 1:M
-            randn!(rng, @view Z0[1:N])
-            randn!(rng, @view Z1[1:N])
-            randn!(rng, @view Z2[1:N])
+            randn!(rng, Z0)
+            randn!(rng, Z1)
+            randn!(rng, Z2)
+            randn!(rng, Z3)
 
-            k = side[i] == 0 ? _heun_sideL!(S_t,U_t,N,sL,sC,sR,s1_coef,s2_coef,dt,th1,th2,th3,Z0,Z1,Z2) :
+            k = if use_pop4
+                _heun_pop4_side!(S_t, U_t, N, sL, sC, sR, dt, th1, th2, th3,
+                                Z0, Z1, Z2, Z3, side[i];
+                                τ=0.1, c=1.0, g=1.0, I_I=1/3, noise_amp=noise_amp)
+            else
+                side[i] == 0 ? _heun_sideL!(S_t,U_t,N,sL,sC,sR,s1_coef,s2_coef,dt,th1,th2,th3,Z0,Z1,Z2) :
                 side[i] == 1 ? _heun_sideC!(S_t,U_t,N,sL,sC,sR,s1_coef,s2_coef,dt,th1,th2,th3,Z0,Z1,Z2) :
                             _heun_sideR!(S_t,U_t,N,sL,sC,sR,s1_coef,s2_coef,dt,th1,th2,th3,Z0,Z1,Z2)
+            end
 
             if     k == 0; mL += 1
             elseif k == 1; mC += 1
