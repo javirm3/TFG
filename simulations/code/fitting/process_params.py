@@ -48,7 +48,7 @@ def make_balanced_subset(df_subj, cond_cols=('stimd_c','ttype_c'), max_total=100
     if n_conds == 0: return d
     per_cond = max(1, max_total // n_conds)
     samples = []
-    rng = np.random.RandomState(seed)
+    rng = np.random.RandomState()
     for cond, dfc in d.groupby('cond'):
         n_sample = min(len(dfc), per_cond)
         samples.append(dfc.sample(n=n_sample, random_state=rng))
@@ -76,7 +76,9 @@ param_names_spatial = [
     'U_int_amplitude', 'U_int_baseline', 'U_ext_amplitude'
 ]
 param_names_spatial_reduced = [ 'sL', 'sC', 'sR','S_amplitude', 'S_d', 'U_int_amplitude']
-param_names = {'spatialU_notrandom': param_names_spatial, 'spatialU': param_names_spatial, 'temporalU': param_names_temporal, 'spatial_reduced_cert': param_names_spatial_reduced}
+param_names_spatial_reduced2 = [ 'sL', 'sR','S_amplitude', 'S_d', 'U_int_amplitude', 'U_int_baseline']
+param_names_spatial_reduced3 = [ 'sL', 'sR','S_amplitude', 'S_d', 'U_int_amplitude']
+param_names = {'spatialU_notrandom': param_names_spatial, 'spatialU': param_names_spatial, 'temporalU': param_names_temporal, 'spatial_reduced_cert': param_names_spatial_reduced, 'spatial_reduced2': param_names_temporal, 'spatial_reduced3': param_names_temporal}
 
 labels = {'sL': f'$s_L$', 'sC': f'$s_C$', 'sR': f'$s_R$', 'noise_amp': f'$\sigma$', 'S_amplitude': r'$S^{amp}$', 'S_d': f'$S^d$', 'U_int_amplitude': r'$U_{int}^{amp}$', 'U_int_baseline': r'$U_{int}^{baseline}$',
           'U_int_onset': r'$U_{int}^{onset}$', 'U_ext_amplitude': r'$U_{ext}^{amp}$', 'rel_vs_ceiling_bal': r'Goodness of fit'}
@@ -93,6 +95,9 @@ def process_params(df, subdirs=['spatialU_notrandom', 'spatialU', 'temporalU', '
     subdirs = [os.path.join(paths.PARAMS_DIR, subdir) for subdir in subdirs]
 
     print(f"Detectados modelos: {[os.path.basename(s) for s in subdirs]}")
+    nll_eval_df = pd.read_csv(os.path.join(paths.PARAMS_DIR, 'params_evaluated.csv'), sep=';')
+    nll_eval_df['subject'] = nll_eval_df['subject'].astype(str).str.strip()
+    nll_eval_df['model']   = nll_eval_df['model'].astype(str).str.strip()
 
     for subdir in subdirs:
         model_name = os.path.basename(subdir)
@@ -113,6 +118,22 @@ def process_params(df, subdirs=['spatialU_notrandom', 'spatialU', 'temporalU', '
                 row["nll"] = result_obj["fval"]
                 row["nll/trial"] = (result_obj["fval"]/result_obj["n_trials"]
                                     if result_obj.get("n_trials", 0) > 0 else np.nan)
+                mask = (
+                    (nll_eval_df['subject'] == row['subject']) &
+                    (nll_eval_df['model']   == row['model'])
+                )
+
+                for pname in param_names[model_name]:
+                    if pname in nll_eval_df.columns:
+                        mask &= np.isclose(nll_eval_df[pname].astype(float), row[pname], rtol=1e-6, atol=1e-8)
+                match = nll_eval_df[mask]
+
+                if not match.empty and 'nll_eval' in match.columns:
+                    row['nll_total'] = float(match['nll_eval'].iloc[0])
+                else:
+                    print(f"⚠️ No se encontró nll_eval para subject={row['subject']}, "f"model={row['model']}")
+                    row['nll_total'] = np.nan
+
                 rows.append(row)
 
     params_df2 = pd.DataFrame(rows)
@@ -121,21 +142,29 @@ def process_params(df, subdirs=['spatialU_notrandom', 'spatialU', 'temporalU', '
 
     H_full_map = {}
     H_bal_map  = {}
-
+    H_bal_map2 = {}
     for subj, dfg in df_all.groupby('subject'):
         H_full = H_conditional(dfg, cond_cols=('stimd_c','ttype_c','x_c'), resp_col='r_c')
         H_full_map[subj] = H_full
-        dfg_bal = make_balanced_subset(dfg, cond_cols=('stimd_c','ttype_c'), max_total=10000, seed=42)
+        dfg_bal = make_balanced_subset(dfg, cond_cols=('stimd_c','ttype_c'), max_total=10000)
         H_bal = H_conditional(dfg_bal, cond_cols=('stimd_c','ttype_c','x_c'), resp_col='r_c')
         H_bal_map[subj] = H_bal
+        dfg_bal2 = make_balanced_subset(dfg, cond_cols=('stimd_c','ttype_c'), max_total=7500, seed=42)
+        H_bal2 = H_conditional(dfg_bal2, cond_cols=('stimd_c','ttype_c','x_c'), resp_col='r_c')
+        H_bal_map2[subj] = H_bal2
 
         # print(f"[{subj}] H_full = {H_full:.6f} | H_bal = {H_bal:.6f}")
 
 
     params_df2['subject'] = params_df2['subject'].apply(subject_name)
-
+    params_df2['nll_total/trial'] = params_df2['nll_total'] / df_all.groupby('subject').size().reindex(params_df2['subject']).values
+    params_df2['rel_vs_ceiling_full'] = params_df2.apply(
+        lambda r: rel_vs_ceiling_from_values(r.get('nll_total/trial', np.nan), H_full_map.get(r['subject'], np.nan)), axis=1)
     params_df2['rel_vs_ceiling_bal'] = params_df2.apply(
         lambda r: rel_vs_ceiling_from_values(r.get('nll/trial', np.nan), H_bal_map.get(r['subject'], np.nan)), axis=1)
+    mask_reduced2 = params_df2['model'] == 'spatial_reduced2'
+    params_df2.loc[mask_reduced2, 'rel_vs_ceiling_bal'] = params_df2[mask_reduced2].apply(
+        lambda r: rel_vs_ceiling_from_values(r.get('nll/trial', np.nan), H_bal_map2.get(r['subject'], np.nan)), axis=1)
 
     for _, r in params_df2.iterrows():
         subj = r['subject']
