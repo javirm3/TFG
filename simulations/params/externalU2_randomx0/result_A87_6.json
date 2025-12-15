@@ -1,0 +1,90 @@
+{
+  "subject": "A87",
+  "n_trials": 9996,
+  "x": [
+    -0.2186308480871979,
+    0.006864360807330883,
+    -0.2766911797520315,
+    1.0,
+    0.30209482476774724,
+    0.0013244518735781585,
+    0.0,
+    -1.0,
+    0.0,
+    1.5576784996970048
+  ],
+  "x0": [
+    [
+      -0.5978314426502271,
+      0.44088196617719344,
+      0.25522208372608457,
+      0.9413604713086184,
+      0.36277748540989097,
+      1.9057515799245672
+    ]
+  ],
+  "fval": 7938.108361125736,
+  "fsd": 2.0481500981497547,
+  "mesh_size": 9.5367431640625e-07,
+  "func_count": 694,
+  "iterations": 25,
+  "message": "Optimization terminated: change in the function value less than options['tol_mesh']",
+  "problem_type": "bound constraints",
+  "total_time": 1660.930076123284,
+  "overhead": 0.0783876668379535,
+  "random_seed": null,
+  "version": "1.0.5",
+  "M_REPS": 200,
+  "DT": 0.0025,
+  "ALPHA": 0.5,
+  "bounds": {
+    "lb": [
+      -1.0,
+      -1.0,
+      -1.0,
+      0.0,
+      0.0,
+      -0.1
+    ],
+    "ub": [
+      2.0,
+      2.0,
+      2.0,
+      2.0,
+      1.0,
+      5.0
+    ],
+    "plb": [
+      -0.75,
+      -0.75,
+      -0.75,
+      0.01,
+      0.1,
+      0.0
+    ],
+    "pub": [
+      0.75,
+      0.75,
+      0.75,
+      1.25,
+      0.8,
+      2.0
+    ]
+  },
+  "crn_seed": 12345,
+  "options": {
+    "uncertainty_handling": false
+  },
+  "param_names": [
+    "sL",
+    "sC",
+    "sR",
+    "noise_amp",
+    "S_amplitude",
+    "S_d",
+    "U_int_amplitude",
+    "U_int_baseline",
+    "U_int_onset",
+    "U_ext_amplitude"
+  ]
+}

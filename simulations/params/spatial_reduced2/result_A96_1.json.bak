@@ -1,0 +1,73 @@
+{
+  "subject": "A96",
+  "n_trials": 5456,
+  "x": [
+    -0.1930528441995989,
+    0.0,
+    -0.13837544351378028,
+    1.0,
+    0.22621734153585293,
+    8.828172565200632e-06,
+    1.6752188904547438,
+    -1.0,
+    0.0,
+    0.0
+  ],
+  "x0": [
+    [
+      0.5,
+      0.5,
+      0.1,
+      0.5,
+      2.0
+    ]
+  ],
+  "fval": 3908.506626960472,
+  "fsd": 4.5410489666665645,
+  "mesh_size": 4.76837158203125e-07,
+  "func_count": 590,
+  "iterations": 27,
+  "message": "Optimization terminated: change in the function value less than options['tol_mesh']",
+  "problem_type": "bound constraints",
+  "total_time": 583.7051937590109,
+  "overhead": 0.23172623189426522,
+  "random_seed": null,
+  "version": "1.0.5",
+  "M_REPS": 100,
+  "DT": 0.0025,
+  "ALPHA": 0.5,
+  "bounds": {
+    "lb": [
+      -1.0,
+      -1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ub": [
+      2.0,
+      2.0,
+      2.0,
+      1.0,
+      10.0
+    ],
+    "plb": [
+      -0.75,
+      -0.75,
+      0.01,
+      0.1,
+      1.0
+    ],
+    "pub": [
+      0.75,
+      0.75,
+      1.25,
+      0.8,
+      5.0
+    ]
+  },
+  "crn_seed": 12345,
+  "options": {
+    "uncertainty_handling": false
+  }
+}

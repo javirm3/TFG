@@ -5,9 +5,13 @@
     -0.8841924453154206,
     -0.9999679990578443,
     -0.8984492823947221,
+    1.0,
     0.29246975960209964,
     3.5645766183700633e-05,
-    2.88745859824121
+    2.88745859824121,
+    -1.0,
+    0.0,
+    0.0
   ],
   "x0": [
     [
@@ -70,5 +74,17 @@
   "crn_seed": 12345,
   "options": {
     "uncertainty_handling": false
-  }
+  },
+  "param_names": [
+    "sL",
+    "sC",
+    "sR",
+    "noise_amp",
+    "S_amplitude",
+    "S_d",
+    "U_int_amplitude",
+    "U_int_baseline",
+    "U_int_onset",
+    "U_ext_amplitude"
+  ]
 }

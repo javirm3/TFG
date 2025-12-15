@@ -67,18 +67,13 @@ def subject_name(s: str) -> str:
 def stars(p):
     return '***' if p < 1e-3 else '**' if p < 1e-2 else '*' if p < 0.05 else 'ns'
 
-param_names_temporal = [
-    'sL', 'sC', 'sR', 'noise_amp', 'S_amplitude', 'S_d',
-    'U_int_amplitude', 'U_int_baseline', 'U_int_onset', 'U_ext_amplitude'
+CANONICAL_THETA_NAMES = [
+    'sL', 'sC', 'sR',
+    'noise_amp',
+    'S_amplitude', 'S_d',
+    'U_int_amplitude', 'U_int_baseline', 'U_int_onset',
+    'U_ext_amplitude'
 ]
-param_names_spatial = [
-    'sL', 'sC', 'sR', 'noise_amp', 'S_amplitude', 'S_d',
-    'U_int_amplitude', 'U_int_baseline', 'U_ext_amplitude'
-]
-param_names_spatial_reduced = [ 'sL', 'sC', 'sR','S_amplitude', 'S_d', 'U_int_amplitude']
-param_names_spatial_reduced2 = [ 'sL', 'sR','S_amplitude', 'S_d', 'U_int_amplitude', 'U_int_baseline']
-param_names_spatial_reduced3 = [ 'sL', 'sR','S_amplitude', 'S_d', 'U_int_amplitude']
-param_names = {'spatialU_notrandom': param_names_spatial, 'spatialU': param_names_spatial, 'temporalU': param_names_temporal, 'spatial_reduced_cert': param_names_spatial_reduced, 'spatial_reduced2': param_names_temporal, 'spatial_reduced3': param_names_temporal}
 
 labels = {'sL': f'$s_L$', 'sC': f'$s_C$', 'sR': f'$s_R$', 'noise_amp': f'$\sigma$', 'S_amplitude': r'$S^{amp}$', 'S_d': f'$S^d$', 'U_int_amplitude': r'$U_{int}^{amp}$', 'U_int_baseline': r'$U_{int}^{baseline}$',
           'U_int_onset': r'$U_{int}^{onset}$', 'U_ext_amplitude': r'$U_{ext}^{amp}$', 'rel_vs_ceiling_bal': r'Goodness of fit'}
@@ -90,10 +85,14 @@ custom_palette = {'sL': set2[0],'sC': set2[1],'sR': set2[2],'U_int_amplitude':
                   'noise_amp':       '#999999', 'nll/trial': '#999999',
                   'rel_vs_ceiling_bal': '#999999'}
 
-def process_params(df, subdirs=['spatialU_notrandom', 'spatialU', 'temporalU', 'spatial_reduced_cert']):
+def process_params(df, subdirs=None):
     rows = []
-    subdirs = [os.path.join(paths.PARAMS_DIR, subdir) for subdir in subdirs]
+    if subdirs is None: 
+        subdirs = [ os.path.join(paths.PARAMS_DIR, name) for name in os.listdir(paths.PARAMS_DIR) if (os.path.isdir(os.path.join(paths.PARAMS_DIR, name)) and name != 'not_used') ]
+    else:
+        subdirs = [os.path.join(paths.PARAMS_DIR, subdir) for subdir in subdirs]
 
+    print(f"df size: {len(df)}")
     print(f"Detectados modelos: {[os.path.basename(s) for s in subdirs]}")
     nll_eval_df = pd.read_csv(os.path.join(paths.PARAMS_DIR, 'params_evaluated.csv'), sep=';')
     nll_eval_df['subject'] = nll_eval_df['subject'].astype(str).str.strip()
@@ -103,6 +102,7 @@ def process_params(df, subdirs=['spatialU_notrandom', 'spatialU', 'temporalU', '
         model_name = os.path.basename(subdir)
         for filename in os.listdir(subdir):
             if filename.endswith(".json") or filename.endswith(".pkl"):
+                # print(f"Procesando {filename} en modelo {model_name}...")
                 subject = filename.replace('result_', '')[:3]
                 if filename.endswith(".json"):
                     with open(os.path.join(subdir, filename), "r") as f:
@@ -112,7 +112,7 @@ def process_params(df, subdirs=['spatialU_notrandom', 'spatialU', 'temporalU', '
                         result_obj = pkl.load(f)
                 x = result_obj["x"]
                 row = {"subject": subject[:3], "model": model_name}
-                for name, val in zip(param_names[model_name], x):
+                for name, val in zip(CANONICAL_THETA_NAMES, x):
                     row[name] = val
 
                 row["nll"] = result_obj["fval"]
@@ -123,7 +123,7 @@ def process_params(df, subdirs=['spatialU_notrandom', 'spatialU', 'temporalU', '
                     (nll_eval_df['model']   == row['model'])
                 )
 
-                for pname in param_names[model_name]:
+                for pname in CANONICAL_THETA_NAMES:
                     if pname in nll_eval_df.columns:
                         mask &= np.isclose(nll_eval_df[pname].astype(float), row[pname], rtol=1e-6, atol=1e-8)
                 match = nll_eval_df[mask]

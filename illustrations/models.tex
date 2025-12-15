@@ -1,0 +1,62 @@
+\documentclass[10pt]{article}
+\usepackage[usenames]{color} %for the color
+\usepackage{amssymb} %maths
+\usepackage{amsmath} %maths
+\usepackage{booktabs}
+\usepackage[utf8]{inputenc} \begin{document}
+\begin{table}[h]
+\centering
+\label{tab:free_params}
+\begin{tabular}{lccccccccccc}
+\toprule
+Modelo
+& $s_L$ & $s_C$ & $s_R$ & $\sigma$
+& $S^{amp}$ & $S^d$
+& $U^{amp}_{int}$ & $U^{base}_{int}$ & $U^{onset}_{int}$
+& $U^{amp}_{ext}$ \\
+\midrule
+Spatial U (fixed $x_0$)
+& \checkmark & \checkmark & \checkmark & \checkmark
+& \checkmark & \checkmark
+& \checkmark & \checkmark & 0.0 & \checkmark \\
+
+Spatial U
+& \checkmark & \checkmark & \checkmark & \checkmark
+& \checkmark & \checkmark
+& \checkmark & \checkmark & 0.0 & \checkmark \\
+
+Temporal U
+& \checkmark & \checkmark & \checkmark & \checkmark
+& \checkmark & \checkmark
+& \checkmark & \checkmark & \checkmark & \checkmark \\
+
+Spatial U (reduced)
+& \checkmark & \checkmark & \checkmark & 1.0
+& \checkmark & \checkmark
+& \checkmark & -1.0 & $0.0$ & 0.0 \\
+
+Spatial U (reduced 2 fast)
+& \checkmark & 0.0 & \checkmark & 1.0
+& \checkmark & \checkmark
+& \checkmark & -1.0 & $0.0$ & 0.0 \\
+
+Spatial U (reduced 2 slow)
+& \checkmark & 0.0 & \checkmark & 1.0
+& \checkmark & \checkmark
+& \checkmark & -1.0 & $0.0$ & 0.0  \\
+
+External U
+& \checkmark & \checkmark & \checkmark & \checkmark
+& \checkmark & \checkmark
+& 0.0 & 0.0 & 0.0 & \checkmark \\
+
+External U comparable
+& \checkmark & \checkmark & \checkmark & 1.0
+& \checkmark & \checkmark
+& 0.0  & 0.0 & 0.0 & \checkmark \\
+
+\bottomrule
+\end{tabular}
+\caption{Free parameters ($\checkmark$) and fixed values by model.}
+\end{table}
+\end{document}
