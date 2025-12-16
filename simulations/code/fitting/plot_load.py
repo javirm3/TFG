@@ -712,10 +712,150 @@ def _get_model_choice(row, thr=0.5):
 
     return chosen
 
+DT_TRACES = 0.1/40
+def debug_alignment(df_sub, traces_col, align_col, dt, n_show=5, label=""):
+    """
+    df_sub: dataframe con las filas (trials) que estás intentando plotear (p.ej. un bin)
+    traces_col: columna del trace que estás usando ("trace_L"/"trace_C"/"trace_R" ya escogida)
+    align_col:  "timepoint_3" o "timepoint_4"
+    dt:         DT_TRACES
+    """
+    # extraer pares (trace, tp)
+    traces = df_sub[traces_col].tolist()
+    tps    = df_sub[align_col].tolist()
+
+    n = len(traces)
+    n_trace_none = 0
+    n_trace_empty = 0
+    n_tp_none = 0
+    n_tp_nan = 0
+    n_k_oob = 0
+    n_ok = 0
+
+    examples = []
+
+    for tr, tp in zip(traces, tps):
+        if tr is None:
+            n_trace_none += 1
+            continue
+
+        a = np.asarray(tr, dtype=float).ravel()
+        if a.size == 0:
+            n_trace_empty += 1
+            continue
+
+        if tp is None:
+            n_tp_none += 1
+            continue
+
+        try:
+            tp = float(tp)
+        except Exception:
+            n_tp_nan += 1
+            continue
+
+        if not np.isfinite(tp):
+            n_tp_nan += 1
+            continue
+
+        k = int(np.round(tp / dt))
+        if k < 0 or k >= a.size:
+            n_k_oob += 1
+            if len(examples) < n_show:
+                examples.append((a.size, tp, k, tp/dt))
+            continue
+
+        n_ok += 1
+        if len(examples) < n_show:
+            examples.append((a.size, tp, k, tp/dt))
+
+    print(f"\n=== DEBUG ALIGN {label} ===")
+    print(f"rows={n}")
+    print(f"trace None={n_trace_none}, trace empty={n_trace_empty}")
+    print(f"tp None={n_tp_none}, tp nonfinite/bad={n_tp_nan}")
+    print(f"k out-of-bounds={n_k_oob}")
+    print(f"OK={n_ok}")
+    if examples:
+        print("Examples: (len_trace, tp, k, tp/dt)")
+        for e in examples:
+            print("  ", e)
+
+def _build_align_layout(traces, align_times, dt=DT_TRACES, clip=True):
+    """
+    traces:      lista de arrays 1D (uno por trial)
+    align_times: lista de floats (segundos desde inicio de trial), misma longitud
+    clip:        si True, fuerza k dentro [0, len-1] en vez de descartar
+
+    Devuelve layout + lista de índices (keep_idx) de trials válidos.
+    """
+    keep_idx = []
+    lens     = []
+    ks       = []
+
+    for i, (tr, tp) in enumerate(zip(traces, align_times)):
+        if tr is None or tp is None:
+            continue
+        a = np.asarray(tr, dtype=float).ravel()
+        if a.size == 0:
+            continue
+
+        k = int(np.floor(float(tp) / dt))
+        k = min(k, a.size - 1)
+
+        if clip:
+            k = max(0, min(k, a.size - 1))
+        else:
+            if k < 0 or k >= a.size:
+                continue
+
+        keep_idx.append(i)
+        lens.append(a.size)
+        ks.append(k)
+
+    if len(keep_idx) == 0:
+        return None
+
+    left_len  = max(ks)                             # samples antes del ancla
+    right_len = max(L - k for L, k in zip(lens, ks))# desde ancla hasta final
+    T = left_len + right_len
+    anchor_col = left_len
+
+    starts = [anchor_col - k for k in ks]  # start col para cada trial válido
+
+    return {
+        "T": T,
+        "anchor_col": anchor_col,
+        "starts": starts,
+        "keep_idx": keep_idx,
+        "dt": dt,
+    }
+
+
+def _apply_align_layout(traces, layout):
+    """
+    Aplica el layout a una lista de trazas (misma longitud original que align_times).
+    Devuelve arr (n_trials_valid, T) con NaNs.
+    """
+    T = layout["T"]
+    out = np.full((len(layout["keep_idx"]), T), np.nan, dtype=float)
+
+    for j, (i, start) in enumerate(zip(layout["keep_idx"], layout["starts"])):
+        a = np.asarray(traces[i], dtype=float).ravel()
+        out[j, start:start + a.size] = a
+
+    return out
+
+
+def _t_axis_from_layout(layout):
+    T = layout["T"]
+    anchor_col = layout["anchor_col"]
+    dt = layout["dt"]
+    return (np.arange(T, dtype=float) - anchor_col) * dt  # t=0 en el timepoint elegido
+
 # ============================================================
 # 1) Correct trials: winning population vs delay_duration binned
 # ============================================================
-def plot_traces_correct_by_delay(df, subject, model_name, n_bins=3, kind_dir="traces"):
+def plot_traces_correct_by_delay(df, subject, model_name, n_bins=3, kind_dir="traces", align="timepoint_4"):
     """
     Para un sujeto:
       - selecciona trials correctos,
@@ -747,23 +887,29 @@ def plot_traces_correct_by_delay(df, subject, model_name, n_bins=3, kind_dir="tr
     palette = sns.color_palette("viridis", len(bin_centers))
     for idx, (bin_cat, center_val) in enumerate(bin_centers.items()):
         sub = df_s[df_s["delay_bin"] == bin_cat].copy()
-        if sub.empty:
-            continue
 
-        # ganar = traza de la población elegida (r_c)
         traces_winning = []
+        align_times    = []
+
         for _, row in sub.iterrows():
             side = row["r_c"]
             col_trace = SIDE_TO_TRACE_COL.get(side)
             tr = row.get(col_trace, None)
-            if tr is not None:
-                traces_winning.append(tr)
+            tp = row.get(align, None)  # <-- timepoint_3 o timepoint_4 (segundos desde inicio)
 
-        arr = _stack_traces(traces_winning)
-        if arr is None:
+            if tr is not None and tp is not None:
+                traces_winning.append(tr)
+                align_times.append(tp)
+
+        layout = _build_align_layout(traces_winning, align_times, dt=DT_TRACES)
+        if layout is None:
+            debug_alignment(sub, traces_col="trace_L", align_col=align, dt=DT_TRACES,
+                    label=f"{subject} bin {idx+1} (trace_L)")
+            print(f"[{subject}] No se pudieron alinear trazas correctas para bin delay {idx+1}.")
             continue
 
-        t = _time_axis_from_traces(arr)
+        arr = _apply_align_layout(traces_winning, layout)
+        t   = _t_axis_from_layout(layout)
         mean_tr = np.nanmean(arr, axis=0)
         sem_tr = np.nanstd(arr, axis=0, ddof=1) / np.sqrt(np.sum(np.isfinite(arr), axis=0).clip(min=1))
 
@@ -779,7 +925,7 @@ def plot_traces_correct_by_delay(df, subject, model_name, n_bins=3, kind_dir="tr
     sns.despine()
     fig.tight_layout()
 
-    fname = f"traces_correct_by_delay_{subject}.png"
+    fname = f"traces_correct_by_delay_{subject}_{align}.png"
     out_path = get_plot_path(kind_dir, fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -788,7 +934,7 @@ def plot_traces_correct_by_delay(df, subject, model_name, n_bins=3, kind_dir="tr
 # ==================================================================
 # 2) Error trials: winning vs good-choice vs other (3 poblaciones)
 # ==================================================================
-def plot_traces_errors_winning_good_bad(df, subject, model_name, kind_dir="traces", thr_model_choice=0.5):
+def plot_traces_errors_winning_good_bad(df, subject, model_name, kind_dir="traces", thr_model_choice=0.5, align="timepoint_4"):
     """
     Para un sujeto:
       - selecciona trials incorrectos del ANIMAL (r_c != x_c),
@@ -811,9 +957,6 @@ def plot_traces_errors_winning_good_bad(df, subject, model_name, kind_dir="trace
     # Correcto/incorrecto según comportamiento
     df_s["behav_correct"] = (df_s["x_c"] == df_s["r_c"])
 
-    # Solo errores del animal
-    df_s = df_s[df_s["behav_correct"] == False].copy()
-
     if df_s.empty:
         print(f"[{subject}] Sin trials incorrectos (animal) para trazas.")
         return
@@ -824,17 +967,19 @@ def plot_traces_errors_winning_good_bad(df, subject, model_name, kind_dir="trace
     # Nos quedamos solo con trials donde el modelo realmente elige algo
     df_s = df_s[df_s["model_choice"].notna()].copy()
     df_s['model_correct'] = (df_s["x_c"] == df_s["model_choice"])
-    # df_s = df_s[df_s["model_correct"] == False].copy()
+    df_s = df_s[df_s["model_correct"] == False].copy()
 
     if df_s.empty:
         print(f"[{subject}] Sin trials donde el modelo tome decisión en errores.")
         return
 
-    traces_winning = []
-    traces_good    = []
-    traces_other   = []
+    traces_winning, traces_good, traces_other = [], [], []
+    align_times = []
 
     for _, row in df_s.iterrows():
+        tp = row.get(align, None)
+        if tp is None:
+            continue
         chosen  = row["model_choice"]  # elección del modelo
         correct = row["x_c"]           # lado correcto real
 
@@ -854,16 +999,17 @@ def plot_traces_errors_winning_good_bad(df, subject, model_name, kind_dir="trace
         traces_winning.append(tr_chosen)
         traces_good.append(tr_correct)
         traces_other.append(tr_other)
+        align_times.append(tp)
 
-    arr_win   = _stack_traces(traces_winning)
-    arr_good  = _stack_traces(traces_good)
-    arr_other = _stack_traces(traces_other)
-
-    if arr_win is None or arr_good is None or arr_other is None:
-        print(f"[{subject}] No se pudieron acumular trazas de error.")
+    layout = _build_align_layout(traces_winning, align_times, dt=DT_TRACES)
+    if layout is None:
+        print(f"[{subject}] No se pudieron alinear trazas de error.")
         return
 
-    t = _time_axis_from_traces(arr_win)
+    arr_win   = _apply_align_layout(traces_winning, layout)
+    arr_good  = _apply_align_layout(traces_good,    layout)
+    arr_other = _apply_align_layout(traces_other,   layout)
+    t = _t_axis_from_layout(layout)
 
     def _mean_sem(arr):
         mean = np.nanmean(arr, axis=0)
@@ -897,7 +1043,7 @@ def plot_traces_errors_winning_good_bad(df, subject, model_name, kind_dir="trace
     sns.despine()
     fig.tight_layout()
 
-    fname = f"traces_errors_winning_good_bad_{subject}_animal.png"
+    fname = f"traces_errors_winning_good_bad_{subject}_{align}.png"
     out_path = get_plot_path(kind_dir, fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -906,7 +1052,7 @@ def plot_traces_errors_winning_good_bad(df, subject, model_name, kind_dir="trace
 # ============================================================
 # 3) Winning population traces: correct vs error
 # ============================================================
-def plot_traces_winning_correct_vs_error(df, subject, model_name, kind_dir="traces"):
+def plot_traces_winning_correct_vs_error(df, subject, model_name, kind_dir="traces", align="timepoint_4"):
     """
     Para un sujeto:
       - winning = población elegida (r_c),
@@ -928,40 +1074,38 @@ def plot_traces_winning_correct_vs_error(df, subject, model_name, kind_dir="trac
     df_corr = df_s[df_s["correct_bool"] == True].copy()
     df_err  = df_s[df_s["correct_bool"] == False].copy()
 
-    traces_corr = []
-    traces_err  = []
+    traces_corr, tp_corr = [], []
+    traces_err,  tp_err  = [], []
 
     for _, row in df_corr.iterrows():
         side = row["r_c"]
         tr = row.get(SIDE_TO_TRACE_COL[side], None)
-        if tr is not None:
-            traces_corr.append(tr)
+        tp = row.get(align, None)
+        if tr is not None and tp is not None:
+            traces_corr.append(tr); tp_corr.append(tp)
 
     for _, row in df_err.iterrows():
         side = row["r_c"]
         tr = row.get(SIDE_TO_TRACE_COL[side], None)
-        if tr is not None:
-            traces_err.append(tr)
+        tp = row.get(align, None)
+        if tr is not None and tp is not None:
+            traces_err.append(tr); tp_err.append(tp)
 
-    arr_corr = _stack_traces(traces_corr)
-    arr_err  = _stack_traces(traces_err)
+    # layout global compartido
+    traces_all = traces_corr + traces_err
+    tp_all     = tp_corr     + tp_err
 
-    if arr_corr is None or arr_err is None:
-        print(f"[{subject}] No se pudieron acumular trazas winning correct/error.")
+    layout = _build_align_layout(traces_all, tp_all, dt=DT_TRACES)
+    if layout is None:
+        print(f"[{subject}] No se pudieron alinear trazas correct/error.")
         return
 
-    n_t = max(arr_corr.shape[1], arr_err.shape[1])
-    # Ajustamos longitud rellenando con NaN si hace falta
-    def _pad_to(arr, T):
-        if arr.shape[1] == T:
-            return arr
-        out = np.full((arr.shape[0], T), np.nan, dtype=float)
-        out[:, : arr.shape[1]] = arr
-        return out
+    arr_all = _apply_align_layout(traces_all, layout)
+    t       = _t_axis_from_layout(layout)
 
-    arr_corr = _pad_to(arr_corr, n_t)
-    arr_err  = _pad_to(arr_err, n_t)
-    t = np.arange(n_t, dtype=float) * DT_TRACES
+    n_corr = len(traces_corr)
+    arr_corr = arr_all[:n_corr, :]
+    arr_err  = arr_all[n_corr:, :]
 
     def _mean_sem(arr):
         mean = np.nanmean(arr, axis=0)
@@ -985,12 +1129,12 @@ def plot_traces_winning_correct_vs_error(df, subject, model_name, kind_dir="trac
 
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Population rate (winning choice)")
-    ax.set_title(f"{subject} – Winning population: correct vs error")
+    ax.set_title(f"{subject} - Winning population: correct vs error")
     ax.legend(frameon=False, fontsize=8)
     sns.despine()
     fig.tight_layout()
 
-    fname = f"traces_winning_correct_vs_error_{subject}.png"
+    fname = f"traces_winning_correct_vs_error_{subject}_{align}.png"
     out_path = get_plot_path(kind_dir, fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -1076,9 +1220,9 @@ if __name__ == "__main__":
     subjects = sorted(df_traces["subject"].unique())
     for subject in tqdm(subjects, desc="Plotting traces"):
         df_subj = df_traces[df_traces["subject"] == subject].copy()
-        plot_traces_correct_by_delay(df_subj, subject=subject, model_name=MODEL_NAME, n_bins=7)
-        plot_traces_winning_correct_vs_error(df_subj, subject=subject, model_name=MODEL_NAME)
-        plot_traces_errors_winning_good_bad(df_subj, subject=subject, model_name=MODEL_NAME)
+        plot_traces_correct_by_delay(df_subj, subject=subject, model_name=MODEL_NAME, n_bins=7, align="timepoint_3")
+        plot_traces_winning_correct_vs_error(df_subj, subject=subject, model_name=MODEL_NAME, align="timepoint_3")
+        plot_traces_errors_winning_good_bad(df_subj, subject=subject, model_name=MODEL_NAME, align="timepoint_3")
     # plot_traces_correct_by_delay(df_traces, subject="All_Subjects", model_name=MODEL_NAME, n_bins=7)
     # plot_traces_winning_correct_vs_error(df_traces, subject="All_Subjects", model_name=MODEL_NAME)
     # plot_traces_errors_winning_good_bad(df_traces, subject="All_Subjects", model_name=MODEL_NAME)

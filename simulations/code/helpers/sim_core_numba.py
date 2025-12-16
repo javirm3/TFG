@@ -209,3 +209,22 @@ def simulate_counts_one_trial_heun(S_t, U_t, side_code,
         elif k == 1: mC += 1
         elif k == 2: mR += 1
     return mL, mC, mR
+
+@njit
+def simulate_counts_one_trial_heun_misses(S_t, U_t, side_code,
+                                   sL, sC, sR, noise_amp,
+                                   dt, th1, th2, th3, M):
+    """Devuelve conteos mL, mC, mR tras M trayectorias para ESTE trial."""
+    mL = 0
+    mC = 0
+    mR = 0
+    miss = 0
+    for _ in range(M):
+        k = _single_path_heun_from_precomputed(
+            S_t, U_t, side_code, sL, sC, sR, noise_amp, dt, th1, th2, th3
+        )
+        if k == 0:   mL += 1
+        elif k == 1: mC += 1
+        elif k == 2: mR += 1
+        elif k == -1: miss +=1
+    return mL, mC, mR, miss

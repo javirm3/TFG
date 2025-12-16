@@ -139,6 +139,7 @@ def process_params(df, subdirs=None):
     params_df2 = pd.DataFrame(rows)
 
     df_all = df.copy()
+    # df_all = df_all[df_all['timepoint_4']<= np.percentile(df_all['timepoint_4'], 95)]
 
     H_full_map = {}
     H_bal_map  = {}
