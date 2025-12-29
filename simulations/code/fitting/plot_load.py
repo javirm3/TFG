@@ -241,7 +241,7 @@ def plot_delay_stim_nested(subject, delay_curves, stim_curves, n_delay, n_stim, 
 
     sns.despine()
     fig.tight_layout()
-    fname = f"fig_delay_stim_nested_{subject}.png"
+    fname = f"fig_delay_stim_nested_{subject}.pdf"
     out_path = get_plot_path("strat", fname, model_name)
     fig.savefig(out_path, dpi=300)
     # print(f"  Figure saved to {out_path}")
@@ -323,7 +323,7 @@ def plot_scatter_delay_stim(df_subj, model_name, subject=None, stim_edges=None, 
 
     sns.despine()
     fig.tight_layout()
-    fname = f"fig_scatter_delay_stim{'_' + subject if subject is not None else ''}.png"
+    fname = f"fig_scatter_delay_stim{'_' + subject if subject is not None else ''}.pdf"
     out_path = get_plot_path("scatter", fname, model_name)
     fig.savefig(out_path, dpi=300)
     # print(f"  Scatter guardado en {out_path}")
@@ -375,7 +375,7 @@ def plot_heatmaps_delay_stim(df_subj, model_name, subject=None, stim_edges=None,
             for x_edge in delay_edges_by_cat[delay][1:-1]:
                 g.ax_joint.axhline( x_edge, ls="--", lw=1.2, color=color, alpha=1,zorder=1)
 
-    fname_a = f"fig_joint_stim{'_' + subject if subject is not None else ''}.png"
+    fname_a = f"fig_joint_stim{'_' + subject if subject is not None else ''}.pdf"
     out_path_a = get_plot_path("scatter", fname_a, model_name)
     plt.legend(title="Stim type", frameon=False, fontsize=12, markerscale=2)
     g.fig.savefig(out_path_a, dpi=300, bbox_inches="tight")
@@ -410,7 +410,7 @@ def plot_heatmaps_delay_stim(df_subj, model_name, subject=None, stim_edges=None,
             for x_edge in stim_edges_by_cat[stim][1:-1]:
                 g.ax_joint.axvline( x_edge, ls="--", lw=1.2, color=color, alpha=1,zorder=1)
 
-    fname_a = f"fig_joint_delay_stim{'_' + subject if subject is not None else ''}.png"
+    fname_a = f"fig_joint_delay_stim{'_' + subject if subject is not None else ''}.pdf"
     out_path_a = get_plot_path("scatter", fname_a, model_name)
     plt.legend(title="Delay type", frameon=False, fontsize=12, markerscale=2)
     g.fig.savefig(out_path_a, dpi=300, bbox_inches="tight")
@@ -458,7 +458,7 @@ def plot_heatmaps_delay_stim(df_subj, model_name, subject=None, stim_edges=None,
     sns.despine()
     fig.tight_layout()
 
-    fname_hm = f"fig_heatmaps_delay_stim{'_' + subject if subject is not None else ''}.png"
+    fname_hm = f"fig_heatmaps_delay_stim{'_' + subject if subject is not None else ''}.pdf"
     out_path_hm = get_plot_path("scatter", fname_hm, model_name)
     fig.savefig(out_path_hm, dpi=300)
     plt.close(fig)
@@ -551,7 +551,7 @@ def plot_categorical_performance_all(df, model_name):
 
     sns.despine()
     fig.tight_layout()
-    fname = f"fig_categorical_perf_all.png"
+    fname = f"fig_categorical_perf_all.pdf"
     out_path = get_plot_path("general", fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -611,7 +611,7 @@ def plot_categorical_strat_by_side(df, subject, model_name, df_silent = None, co
     sns.despine()
     fig.tight_layout()
 
-    fname = f"fig_categorical_strat_by_side_{subject}.png"
+    fname = f"fig_categorical_strat_by_side_{subject}.pdf"
     out_path = get_plot_path("strat_by_side", fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -728,7 +728,7 @@ def plot_delay_binned_1d(df, model_name, subject=None, n_bins=N_X_BINS):
     sns.despine()
     fig.tight_layout()
 
-    fname = f"fig_delay_1d_{title_subj}.png"
+    fname = f"fig_delay_1d_{title_subj}.pdf"
     out_path = get_plot_path("binning", fname, model_name)
     fig.savefig(out_path, dpi=300)
 
@@ -745,7 +745,7 @@ def plot_delay_binned_1d(df, model_name, subject=None, n_bins=N_X_BINS):
     ax.set_title(f"{title_subj} - Stimulus (1D, {len(order_bins_stim)} bins)")
     sns.despine()
     fig.tight_layout()
-    fname = f"fig_stim_1d_{title_subj}.png"
+    fname = f"fig_stim_1d_{title_subj}.pdf"
     out_path = get_plot_path("binning", fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -807,7 +807,7 @@ def plot_delay_binned_1d_1(df, model_name, subject=None, n_bins=N_X_BINS):
     sns.despine()
     fig.tight_layout()
 
-    fname = f"fig_delay_1d_{title_subj}.png"
+    fname = f"fig_delay_1d_{title_subj}.pdf"
     out_path = get_plot_path("no binning", fname, model_name)
     fig.savefig(out_path, dpi=300)
 
@@ -824,11 +824,116 @@ def plot_delay_binned_1d_1(df, model_name, subject=None, n_bins=N_X_BINS):
     ax.set_title(f"{title_subj} - Stimulus (1D, {len(order_bins_stim)} bins)")
     sns.despine()
     fig.tight_layout()
-    fname = f"fig_stim_1d_{title_subj}.png"
+    fname = f"fig_stim_1d_{title_subj}.pdf"
     out_path = get_plot_path("no binning", fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
 
+def plot_timepoint_deltas_binned_1d_overlay(df, model_name, subject=None, n_bins=N_X_BINS):
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    # --- filtros como en tu función (ajusta si hace falta) ---
+    df_base = df.copy()
+    # df_A = df_base[df_base["stimd_c"] == "SS"].copy()   # para TP3-TP1
+    # df_B = df_base[df_base["ttype_c"] == "DS"].copy()   # para TP4-TP3
+    df_A = df_base.copy()   # para TP3-TP1
+    df_B = df_base.copy()   # para TP4-TP3 
+    if subject is not None:
+        df_A = df_A[df_A["subject"] == subject].copy()
+        df_B = df_B[df_B["subject"] == subject].copy()
+
+    needed_cols = ["correct_bool", "p_model_correct", "subject", "timepoint_1", "timepoint_3", "timepoint_4"]
+    df_A = df_A.dropna(subset=needed_cols)
+    df_B = df_B.dropna(subset=needed_cols)
+
+    if df_A.empty or df_B.empty:
+        print(f"  (sin datos válidos para overlay en {subject})")
+        return
+
+    # --- deltas ---
+    df_A["delta"] = df_A["timepoint_3"] - df_A["timepoint_1"]
+    df_A["delta_kind"] = "TP3-TP1"
+
+    df_B["delta"] = df_B["timepoint_4"] - df_B["timepoint_3"]
+    df_B["delta_kind"] = "TP4-TP3"
+
+    # limpiar inf/nan
+    df_A["delta"] = df_A["delta"].replace([np.inf, -np.inf], np.nan)
+    df_A = df_A.dropna(subset=["delta"])
+    df_B["delta"] = df_B["delta"].replace([np.inf, -np.inf], np.nan)
+    df_B = df_B.dropna(subset=["delta"])
+    if df_A.empty or df_B.empty:
+        print(f"  (sin datos tras limpiar inf/nan en {subject})")
+        return
+
+    # --- bins comunes (comparables) ---
+    all_delta = pd.concat([df_A["delta"], df_B["delta"]], ignore_index=True)
+    _, edges = pd.qcut(all_delta, q=n_bins, retbins=True, duplicates="drop")
+
+    # asignamos esos edges a ambos datasets
+    df_A["x_bin"] = pd.cut(df_A["delta"], bins=edges, include_lowest=True)
+    df_B["x_bin"] = pd.cut(df_B["delta"], bins=edges, include_lowest=True)
+
+    df_long = pd.concat([df_A, df_B], ignore_index=True)
+
+    # centros por bin (usamos el delta mediano en cada bin, por delta_kind)
+    centers = (
+        df_long.groupby(["delta_kind", "x_bin"], observed=True)["delta"]
+        .median().rename("center").reset_index()
+        .sort_values(["delta_kind", "center"])
+    )
+
+    subj = (
+        df_long.groupby(["delta_kind", "x_bin", "subject"], observed=True)
+        .agg(
+            data_acc=("correct_bool", "mean"),
+            model_acc=("p_model_correct", "mean"),
+        )
+        .reset_index()
+        .merge(centers, on=["delta_kind", "x_bin"], how="left")
+    )
+
+    plot_df = subj.melt(
+        id_vars=["delta_kind", "x_bin", "subject", "center"],
+        value_vars=["data_acc", "model_acc"],
+        var_name="kind",
+        value_name="acc",
+    )
+    plot_df["kind"] = plot_df["kind"].map({"data_acc": "Data", "model_acc": "Model"})
+
+    # --- plot único ---
+    fig, ax = plt.subplots(figsize=(6, 5))
+
+    # Modelo: líneas + banda CI, dos curvas (hue=delta_kind)
+    label_map = {
+    "TP3-TP1": "Time in corridor",
+    "TP4-TP3": "Time out of corridor",
+    }
+    sns.lineplot(data=plot_df[plot_df["kind"] == "Model"],x="center", y="acc",hue = "delta_kind", hue_order=list(label_map.keys()), errorbar=("ci", 95), err_style="band",ax=ax)
+
+    # Data: puntos + barras CI, dos curvas
+    sns.lineplot(data=plot_df[plot_df["kind"] == "Data"],x="center", y="acc",hue="delta_kind",errorbar=("ci", 95), err_style="bars",marker="o", linewidth=0,ax=ax, zorder=10, legend=False, hue_order=list(label_map.keys()),)
+
+    ax.axhspan(0, 1/3, color="gray", alpha=0.15, zorder=0)
+    ax.set_ylim(0.2, 1.05)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Frac. correct responses")
+
+    title_subj = subject if subject is not None else ""
+
+    sns.despine()
+    fig.tight_layout()
+
+    fname = f"fig_tp_deltas_overlay_1d_All_{title_subj}.pdf"
+    out_path = get_plot_path("extended_corridor", fname, model_name)
+    handles, labels = ax.get_legend_handles_labels()
+    new_labels = [label_map.get(l, l) for l in labels]
+    ax.legend(handles, new_labels, title=None)
+    fig.savefig(out_path, dpi=300)
+    plt.close(fig)
 
 DT_TRACES = 0.1 / 40.0  # el mismo dt que usas en la simulación
 SIDE_TO_TRACE_COL = {"L": "trace_L", "C": "trace_C", "R": "trace_R"}
@@ -1182,7 +1287,7 @@ def plot_traces_correct_by_delay(df, model_name, n_bins=7, subject=None ,kind_di
     sns.despine()
     fig.subplots_adjust(bottom=0.4)
 
-    fname = f"traces_correct_by_delay{('_'+ subject) if subject is not None else ''}_{align}.png"
+    fname = f"traces_correct_by_delay{('_'+ subject) if subject is not None else ''}_{align}.pdf"
     out_path = get_plot_path(kind_dir, fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -1312,7 +1417,7 @@ def plot_traces_errors_chosen(df, model_name, kind_dir="traces",
             ax.set_xlim([-1, 1])
         ax.axvline(0, color="gray", ls="--", lw=1)
         ax.axhline(0, color="gray", ls="--", lw=1)
-        fname = f"traces_errors_winning_good_bad{'_' + subject if subject is not None else ''}_{align}.png"
+        fname = f"traces_errors_winning_good_bad{'_' + subject if subject is not None else ''}_{align}.pdf"
         out_path = get_plot_path(kind_dir, fname, model_name)
         fig.savefig(out_path, dpi=300)
         plt.close(fig)
@@ -1384,7 +1489,7 @@ def plot_traces_errors_chosen(df, model_name, kind_dir="traces",
     ax.set_ylim(-2,0.2)
     ax.axvline(0, color="gray", ls="--", lw=1)
     ax.axhline(0, color="gray", ls="--", lw=1)
-    fname = f"traces_errors_winning_good_bad{'_' + subject if subject is not None else ''}_{align}.png"
+    fname = f"traces_errors_winning_good_bad{'_' + subject if subject is not None else ''}_{align}.pdf"
     out_path = get_plot_path(kind_dir, fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -1509,7 +1614,7 @@ def plot_traces_winning_correct_vs_error(df, model_name,subject=None, kind_dir="
         sns.despine()
         fig.tight_layout()
 
-        fname = f"traces_winning_correct_vs_error{'_' + subject if subject is not None else ''}_{align}.png"
+        fname = f"traces_winning_correct_vs_error{'_' + subject if subject is not None else ''}_{align}.pdf"
         out_path = get_plot_path(kind_dir, fname, model_name)
         fig.savefig(out_path, dpi=300)
         plt.close(fig)
@@ -1579,7 +1684,7 @@ def plot_traces_winning_correct_vs_error(df, model_name,subject=None, kind_dir="
     sns.despine()
     fig.tight_layout()
     
-    fname = f"traces_winning_correct_vs_error{'_' + subject if subject is not None else ''}_{align}.png"
+    fname = f"traces_winning_correct_vs_error{'_' + subject if subject is not None else ''}_{align}.pdf"
     out_path = get_plot_path(kind_dir, fname, model_name)
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -1656,11 +1761,25 @@ if __name__ == "__main__":
         df_silent_subj = df_silent[df_silent["subject"] == subject].copy()
         plot_categorical_strat_by_side(df_subj, subject, MODEL_NAME, df_silent=df_silent_subj) # Para plot sin silent no pasar df_silent
         plot_delay_binned_1d(df=df_subj, subject=subject, model_name=MODEL_NAME, n_bins=N_X_BINS)
+        plot_timepoint_deltas_binned_1d_overlay(df=df_subj, subject=subject, model_name=MODEL_NAME, n_bins=N_X_BINS)
     plot_scatter_delay_stim(df, MODEL_NAME, show_bins=False)
     plot_heatmaps_delay_stim(df, MODEL_NAME)
     # plot_categorical_performance_all(df, MODEL_NAME)
     plot_delay_binned_1d(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
     plot_delay_binned_1d_1(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
+    plot_timepoint_deltas_binned_1d_overlay(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
+    from helpers.plots import plot_delay_stim_1d_multipanel_all_subjects, plot_delay_binned_1d_two_models
+    plot_delay_stim_1d_multipanel_all_subjects(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS, max_cols=5)
+
+    pathB = os.path.join(paths.PARAMS_DIR, f"df_externalU2_randomx0.parquet")
+    pathA = os.path.join(paths.PARAMS_DIR, f"df_spatial_reduced3.parquet")
+    dfA = parse_model_probs_column(pd.read_parquet(pathA), col="model")
+    dfB = parse_model_probs_column(pd.read_parquet(pathB), col="model")
+
+    plot_delay_binned_1d_two_models(dfA, dfB, model_name_A="spatial_reduced3", model_name_B="externalU2_randomx0",
+        # subject="A83",
+        n_bins=N_X_BINS, color_A="#1f77b4", color_B="#d62728",)
+
 
     traces_path = os.path.join(paths.PARAMS_DIR, f"df_traces_{MODEL_NAME}.parquet")
     df_traces = pd.read_parquet(traces_path)
@@ -1671,7 +1790,6 @@ if __name__ == "__main__":
             plot_traces_correct_by_delay(df_subj, subject=subject, model_name=MODEL_NAME, n_bins=7, align=align)
             plot_traces_winning_correct_vs_error(df_subj, subject=subject, model_name=MODEL_NAME, align=align)
             plot_traces_errors_chosen(df_subj, subject=subject, model_name=MODEL_NAME, align=align)
-    
     for align in ["timepoint_3", "timepoint_4"]:
         plot_traces_correct_by_delay(df_traces,  model_name=MODEL_NAME, n_bins=7, align=align)
         plot_traces_winning_correct_vs_error(df_traces, model_name=MODEL_NAME, align=align)
