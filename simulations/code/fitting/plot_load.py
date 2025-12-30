@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# rsync -avP mini:code/fitting/df_traces_correct_error_spatial_reduced3.parquet df_traces_correct_error_spatial_reduced3.parquet
 
 import os
 import sys
@@ -1333,6 +1332,7 @@ def plot_traces_errors_chosen(df, model_name, kind_dir="traces",
         df_one = df_one[df_one["model_choice"].notna()].copy()
         df_one = df_one[df_one["x_c"] != df_one["model_choice"]].copy()  # errores del modelo
         df_one = df_one[df_one['stimd_c'] == 'SS']
+        df_one = df_one[df_one['ttype_c'] == 'DL']
         if df_one.empty:
             return None, None, None
 
@@ -1412,9 +1412,9 @@ def plot_traces_errors_chosen(df, model_name, kind_dir="traces",
         sns.despine()
         fig.tight_layout()
         if align == "timepoint_4":
-            ax.set_xlim([-2.0, 0.0])
+            ax.set_xlim([-4, 0.0])
         elif align == "timepoint_3":
-            ax.set_xlim([-1, 1])
+            ax.set_xlim([-4, 4])
         ax.axvline(0, color="gray", ls="--", lw=1)
         ax.axhline(0, color="gray", ls="--", lw=1)
         fname = f"traces_errors_winning_good_bad{'_' + subject if subject is not None else ''}_{align}.pdf"
@@ -1483,9 +1483,9 @@ def plot_traces_errors_chosen(df, model_name, kind_dir="traces",
     sns.despine()
     fig.tight_layout()
     if align == "timepoint_4":
-            ax.set_xlim([-2.0, 0.0])
+            ax.set_xlim([-3.5, 0.0])
     elif align == "timepoint_3":
-        ax.set_xlim([-1, 1])
+        ax.set_xlim([-3, 3])
     ax.set_ylim(-2,0.2)
     ax.axvline(0, color="gray", ls="--", lw=1)
     ax.axhline(0, color="gray", ls="--", lw=1)
@@ -1690,6 +1690,181 @@ def plot_traces_winning_correct_vs_error(df, model_name,subject=None, kind_dir="
     plt.close(fig)
 
 
+def plot_traces_winning_correct_vs_error(df, model_name, subject=None, kind_dir="traces",
+                                         align="timepoint_4", delayd=None, stimd=None,
+                                         dt=DT_TRACES, clip=True):
+    """
+    Nuevo DF:
+      - trace_correct: traza media de la población GANADORA (winner) en reps correctas
+      - trace_error:   traza media de la población GANADORA (winner) en reps incorrectas
+
+    single:
+      - usa directamente trace_correct vs trace_error del sujeto
+
+    group:
+      - por sujeto: alinea trace_correct y trace_error (padding NaNs, sin interpolar)
+      - luego media entre sujetos
+    """
+    df_s = df.copy()
+
+    # normaliza columnas si existen (no dependemos ya de model_choice)
+    if "r_c" in df_s.columns:
+        df_s["r_c"] = df_s["r_c"].astype("string").str.strip().str.upper()
+        df_s = df_s[df_s["r_c"].isin(["L", "C", "R"])].copy()
+
+    if subject is not None:
+        df_s = df_s[df_s["subject"] == subject].copy()
+        if df_s.empty:
+            print(f"[{subject}] Sin trials válidos para correct vs error.")
+            return
+    else:
+        if df_s.empty:
+            print("[GROUP] Sin trials válidos para correct vs error.")
+            return
+
+    def _collect_traces(df_block, trace_col):
+        traces, tps = [], []
+        for _, row in df_block.iterrows():
+            if delayd is not None and row.get("ttype_c", None) != delayd:
+                continue
+            if stimd is not None and row.get("stimd_c", None) != stimd:
+                continue
+            tp = row.get(align, None)
+            if tp is None:
+                continue
+            tr = row.get(trace_col, None)
+            if tr is None:
+                continue
+            traces.append(tr); tps.append(tp)
+        return traces, tps
+
+    # ---------- SINGLE ----------
+    if subject is not None:
+        tr_corr, tp_corr = _collect_traces(df_s, "trace_correct")
+        tr_err,  tp_err  = _collect_traces(df_s, "trace_error")
+
+        summ_corr = _mean_sem_from_aligned(tr_corr, tp_corr, dt=dt, clip=clip)
+        summ_err  = _mean_sem_from_aligned(tr_err,  tp_err,  dt=dt, clip=clip)
+
+        if summ_corr is None or summ_err is None:
+            print(f"[{subject}] No se pudieron alinear trazas correct/error.")
+            return
+
+        # rejilla común sin interpolar (padding mecánico)
+        both = _stack_subject_means_no_interp([summ_corr, summ_err], dt=dt)
+        t = both["t"]
+        m_corr = both["subj_matrix"][0]
+        m_err  = both["subj_matrix"][1]
+
+        # padding de SEM a la rejilla común
+        def _pad_vec_to_both(vec, src_t):
+            out = np.full_like(t, np.nan, dtype=float)
+            anchor = np.where(t == 0)[0][0]
+            src_anchor = np.where(src_t == 0)[0][0]
+            start = anchor - src_anchor
+            out[start:start+len(vec)] = vec
+            return out
+
+        s_corr = _pad_vec_to_both(summ_corr["sem"], summ_corr["t"])
+        s_err  = _pad_vec_to_both(summ_err["sem"],  summ_err["t"])
+
+        fig, ax = plt.subplots(figsize=(4, 4))
+        ax.plot(t, m_corr, color="#1a9850", lw=2, label="Correct reps (winner)")
+        ax.fill_between(t, m_corr - s_corr, m_corr + s_corr, color="#1a9850", alpha=0.2)
+
+        ax.plot(t, m_err,  color="#d73027", lw=2, label="Error reps (winner)")
+        ax.fill_between(t, m_err - s_err, m_err + s_err, color="#d73027", alpha=0.2)
+
+        if align == "timepoint_4":
+            ax.set_xlim([-2.0, 0.0])
+        elif align == "timepoint_3":
+            ax.set_xlim([-1, 1])
+
+        ax.axvline(0, color="gray", ls="--", lw=1)
+        ax.axhline(0, color="gray", ls="--", lw=1)
+        ax.set_xlabel(f"Time (s) aligned to {'Response' if align == 'timepoint_4' else 'Corridor end'} (t=0)", fontsize=12)
+        ax.set_ylabel("Population rate", fontsize=12)
+        ax.set_title(f"{subject} - Winner population: correct vs error", fontsize=12)
+        ax.legend(frameon=False, fontsize=8)
+        sns.despine()
+        fig.tight_layout()
+
+        fname = f"traces_winning_correct_vs_error_{subject}_{align}{f'_{delayd}' if delayd is not None else ''}{f'_{stimd}' if stimd is not None else ''}.pdf"
+        out_path = get_plot_path(kind_dir, fname, model_name)
+        fig.savefig(out_path, dpi=300)
+        plt.close(fig)
+        return
+
+    # ---------- GROUP ----------
+    per_subj_corr = []
+    per_subj_err  = []
+
+    for s in sorted(df_s["subject"].unique()):
+        df_sub = df_s[df_s["subject"] == s]
+
+        tr_corr, tp_corr = _collect_traces(df_sub, "trace_correct")
+        tr_err,  tp_err  = _collect_traces(df_sub, "trace_error")
+
+        per_subj_corr.append(_mean_sem_from_aligned(tr_corr, tp_corr, dt=dt, clip=clip))
+        per_subj_err.append (_mean_sem_from_aligned(tr_err,  tp_err,  dt=dt, clip=clip))
+
+    grp_corr = _stack_subject_means_no_interp(per_subj_corr, dt=dt)
+    grp_err  = _stack_subject_means_no_interp(per_subj_err,  dt=dt)
+
+    if grp_corr is None or grp_err is None:
+        print("[GROUP] No se pudieron alinear trazas correct/error.")
+        return
+
+    # rejilla común entre corr y err (sin interpolar)
+    fake_corr = dict(t=grp_corr["t"], mean=grp_corr["mean"], sem=grp_corr["sem"],
+                     layout={"anchor_col": np.where(grp_corr["t"] == 0)[0][0], "T": len(grp_corr["t"])})
+    fake_err  = dict(t=grp_err["t"],  mean=grp_err["mean"],  sem=grp_err["sem"],
+                     layout={"anchor_col": np.where(grp_err["t"] == 0)[0][0],  "T": len(grp_err["t"])})
+    both = _stack_subject_means_no_interp([fake_corr, fake_err], dt=dt)
+
+    t = both["t"]
+    m_corr = both["subj_matrix"][0]
+    m_err  = both["subj_matrix"][1]
+
+    def _pad_vec_to_both(vec, src_t):
+        out = np.full_like(t, np.nan, dtype=float)
+        anchor = np.where(t == 0)[0][0]
+        src_anchor = np.where(src_t == 0)[0][0]
+        start = anchor - src_anchor
+        out[start:start+len(vec)] = vec
+        return out
+
+    s_corr = _pad_vec_to_both(grp_corr["sem"], grp_corr["t"])
+    s_err  = _pad_vec_to_both(grp_err["sem"],  grp_err["t"])
+
+    fig, ax = plt.subplots(figsize=(4, 4))
+    ax.plot(t, m_corr, color="#1a9850", lw=2, label="Correct reps (winner)")
+    ax.fill_between(t, m_corr - s_corr, m_corr + s_corr, color="#1a9850", alpha=0.2)
+
+    ax.plot(t, m_err,  color="#d73027", lw=2, label="Error reps (winner)")
+    ax.fill_between(t, m_err - s_err, m_err + s_err, color="#d73027", alpha=0.2)
+
+    ax.axvline(0, color="gray", ls="--", lw=1)
+    ax.axhline(0, color="gray", ls="--", lw=1)
+    ax.set_xlabel(f"Time (s) aligned to {'Response' if align == 'timepoint_4' else 'Corridor end'} (t=0)", fontsize=12)
+    ax.set_ylabel("Population rate", fontsize=12)
+    ax.set_title(f"{grp_corr['n_subjects']} subjects - Winner population: correct vs error", fontsize=12)
+    ax.legend(frameon=False, fontsize=8)
+
+    if align == "timepoint_4":
+        ax.set_xlim([-2.0, 0.0])
+    elif align == "timepoint_3":
+        ax.set_xlim([-1, 1])
+    ax.set_ylim(-0.2, 4.2)
+
+    sns.despine()
+    fig.tight_layout()
+
+    fname = f"traces_winning_correct_vs_error_{align}{f'_{delayd}' if delayd is not None else ''}{f'_{stimd}' if stimd is not None else ''}.pdf"
+    out_path = get_plot_path(kind_dir, fname, model_name)
+    fig.savefig(out_path, dpi=300)
+    plt.close(fig)
+
 # ========= MAIN =========
 if __name__ == "__main__":
     sns.set()
@@ -1782,18 +1957,25 @@ if __name__ == "__main__":
 
 
     traces_path = os.path.join(paths.PARAMS_DIR, f"df_traces_{MODEL_NAME}.parquet")
+    traces_ce_path = os.path.join(paths.PARAMS_DIR, f"df_traces_correct_error_{MODEL_NAME}.parquet")
     df_traces = pd.read_parquet(traces_path)
+    df_traces_ce = pd.read_parquet(traces_ce_path)
     subjects = sorted(df_traces["subject"].unique())
     for subject in tqdm(subjects, desc="Plotting traces"):
         df_subj = df_traces[df_traces["subject"] == subject].copy()
+        df_subj_ce = df_traces_ce[df_traces_ce["subject"] == subject].copy()
         for align in ["timepoint_3", "timepoint_4"]:
             plot_traces_correct_by_delay(df_subj, subject=subject, model_name=MODEL_NAME, n_bins=7, align=align)
-            plot_traces_winning_correct_vs_error(df_subj, subject=subject, model_name=MODEL_NAME, align=align)
+            plot_traces_winning_correct_vs_error(df_subj_ce, subject=subject, model_name=MODEL_NAME, align=align)
             plot_traces_errors_chosen(df_subj, subject=subject, model_name=MODEL_NAME, align=align)
     for align in ["timepoint_3", "timepoint_4"]:
         plot_traces_correct_by_delay(df_traces,  model_name=MODEL_NAME, n_bins=7, align=align)
-        plot_traces_winning_correct_vs_error(df_traces, model_name=MODEL_NAME, align=align)
+        plot_traces_winning_correct_vs_error(df_traces_ce, model_name=MODEL_NAME, align=align)
         plot_traces_errors_chosen(df_traces, model_name=MODEL_NAME, align=align)
+    
+    for delayd in ['DS', 'DM', 'DL']:
+        plot_traces_winning_correct_vs_error(df_traces, model_name=MODEL_NAME, delayd=delayd, align="timepoint_4")
+        plot_traces_winning_correct_vs_error(df_traces, model_name=MODEL_NAME, delayd=delayd, align="timepoint_3")
     # plot_traces_correct_by_delay(df_traces, subject="All_Subjects", model_name=MODEL_NAME, n_bins=7)
     # plot_traces_winning_correct_vs_error(df_traces, subject="All_Subjects", model_name=MODEL_NAME)
     # plot_traces_errors_winning_good_bad(df_traces, subject="All_Subjects", model_name=MODEL_NAME)
