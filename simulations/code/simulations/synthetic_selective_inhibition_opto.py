@@ -6,6 +6,7 @@
 #     "matplotlib",
 #     "numpy",
 #     "pandas",
+#     "seaborn==0.13.2",
 #     "traitlets",
 # ]
 # requires-python = ">=3.11"
@@ -58,15 +59,22 @@ def _(Path):
 
     DT = 0.01
     N_STEPS = 360
+    FIG_DPI = 300
     CHOICE_LABELS = ("L", "C", "R")
     SIDE_COLORS = {"L": "tab:red", "C": "tab:green", "R": "tab:blue"}
+    LIGHT_OFF_COLOR = "#9CA3AF"
+    LIGHT_ON_EXCITATION_COLOR = "#C0392B"
+    LIGHT_ON_INHIBITION_COLOR = "#2F80ED"
     STIM_BY_SIDE = {"L": "SL", "C": "SM", "R": "SS"}
     SIDE_BY_STIM = {"SL": "L", "SM": "C", "SS": "R", "VG": "C"}
     return (
         CHOICE_LABELS,
         DATA_PATH,
         DT,
-        MOLAB_URL,
+        FIG_DPI,
+        LIGHT_OFF_COLOR,
+        LIGHT_ON_EXCITATION_COLOR,
+        LIGHT_ON_INHIBITION_COLOR,
         N_STEPS,
         RESULT_DIR,
         SIDE_COLORS,
@@ -191,23 +199,13 @@ def _(DATA_PATH, STIM_BY_SIDE, pd):
 
 
 @app.cell
-def _(MOLAB_URL, mo, timing_means_df):
+def _(mo, timing_means_df):
     mo.vstack(
         [
             mo.md(
                 f"""
                 # Synthetic selective-inhibition optogenetic sweep
-
-                [![Open in molab](https://marimo.io/molab-shield.svg)]({MOLAB_URL})
-
-                Synthetic L/C/R trials use the real-data mean timing table below, but no subject
-                data or fitted parameters are used in the simulation.
-
-                The simulated rates follow the original three-choice form with separate
-                inhibitory populations: no E-E connections and no I-I connections. Each
-                excitatory population has self-amplification, each inhibitory population
-                inhibits its matching excitatory population and the two alternatives, and
-                excitatory populations drive the two non-matching inhibitory populations.
+                Synthetic L/C/R trials using the real-data mean timing table below.
                 """
             ),
             mo.ui.table(timing_means_df.round(4), page_size=8),
@@ -253,9 +251,9 @@ def default_params():
 def _(architecture_widget, mo):
     symbolic_equations = mo.md(
         r"""
-        ## Transfer function and rate equations
+        ## Equations of the system
 
-        Here \(I_L(t),I_C(t),I_R(t)\) are the simulated stimulus plus urgency inputs to the excitatory populations. The \(b_{I_L},b_{I_C},b_{I_R}\) terms are tonic inhibitory-population biases, not stimulus inputs.
+        Here \(I_L(t),I_C(t),I_R(t)\) are the simulated stimulus plus urgency signal inputs to the excitatory populations.
 
         $$\phi(x)=\begin{cases}0,&x\le 0\\x^2,&0<x\le 1\\2\sqrt{x-0.75},&x>1\end{cases}$$
 
@@ -287,6 +285,19 @@ def _(architecture_widget, mo):
     )
 
     mo.hstack([mo.vstack([symbolic_equations]), mo.vstack([substituted_equations])], align="end")
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Scheme of the system (interactive)
+    You can change the parameters of the system and the plots update automatically. To change the parameters you can drag over the numbers in the scheme or the numbers in the sidebar and underneath. The parameters for Inhibition of the excitatory populations allow a grouped change in the sidebar.
+
+    There are some preset configurations, also you can save all the parameters selected to a JSON and load them afterwards.
+
+    The optogenetics are applied in the model as an extra input current in the center populations. You can select whether this input affects the excitatory population, the inhibitory or both of them.
+    """)
     return
 
 
@@ -814,10 +825,10 @@ def _(anywidget, mo, traitlets):
 def _(mo):
     is_script_mode = mo.app_meta().mode == "script"
     n_trials_slider = mo.ui.slider(
-        start=300,
-        stop=6000,
-        step=300,
-        value=900,
+        start=100,
+        stop=10000,
+        step=100,
+        value=1000,
         label="number of trials",
         show_value=True,
     )
@@ -1574,6 +1585,10 @@ def _(np):
 @app.cell
 def _(
     CHOICE_LABELS,
+    FIG_DPI,
+    LIGHT_OFF_COLOR,
+    LIGHT_ON_EXCITATION_COLOR,
+    LIGHT_ON_INHIBITION_COLOR,
     SIDE_COLORS,
     custom_boxplot,
     hard_ttype_selector,
@@ -1608,8 +1623,8 @@ def _(
 
     def _plot_delta(ax, data, title):
         for mask, color, label in (
-            (data["opto_amp"] <= 0.0, "tab:blue", "inhibition"),
-            (data["opto_amp"] >= 0.0, "tab:red", "excitation"),
+            (data["opto_amp"] <= 0.0, LIGHT_ON_INHIBITION_COLOR, "inhibition"),
+            (data["opto_amp"] >= 0.0, LIGHT_ON_EXCITATION_COLOR, "excitation"),
         ):
             seg = data[mask].sort_values("opto_amp")
             if len(seg) >= 2:
@@ -1617,7 +1632,7 @@ def _(
                     seg["delta_center"],
                     seg["delta_sides"],
                     color=color,
-                    lw=2.4,
+                    lw=2.8,
                     label=label,
                 )
         pts = ax.scatter(
@@ -1627,7 +1642,7 @@ def _(
             cmap="RdBu_r",
             edgecolor="white",
             linewidth=0.4,
-            s=48,
+            s=58,
             zorder=3,
         )
         ax.axhline(0, color="#8A8A8A", lw=1)
@@ -1674,6 +1689,7 @@ def _(
         ax.set_xlim(-0.08, 1.08)
         ax.set_ylim(-0.08, h + 0.1)
         ax.set_aspect("equal")
+        ax.set_box_aspect(1)
         ax.axis("off")
 
     def _plot_sil_dot(ax, sil_data, opto_amp):
@@ -1695,23 +1711,23 @@ def _(
     all_curve = _curve_data(sweep_df)
     hard_curve = _curve_data(sweep_df, hard_ttype_selector.value)
 
-    acc_fig, acc_ax = plt.subplots(figsize=(4, 4))
+    acc_fig, acc_ax = plt.subplots(figsize=(4, 4), dpi=FIG_DPI)
     pts = _plot_delta(acc_ax, all_curve, "All synthetic trials")
     acc_fig.colorbar(pts, ax=acc_ax, fraction=0.046, pad=0.04, label="IC opto current")
     acc_fig.tight_layout()
 
-    hard_fig, hard_ax = plt.subplots(figsize=(4, 4))
+    hard_fig, hard_ax = plt.subplots(figsize=(4, 4), dpi=FIG_DPI)
     pts = _plot_delta(hard_ax, hard_curve, f"ttype_c={hard_ttype_selector.value}")
     hard_fig.colorbar(pts, ax=hard_ax, fraction=0.046, pad=0.04, label="IC opto current")
     hard_fig.tight_layout()
 
-    heat_fig, heat_axes = plt.subplots(1, 2, figsize=(8.0, 2.9), constrained_layout=True)
+    heat_fig, heat_axes = plt.subplots(1, 2, figsize=(8.0, 2.9), dpi=FIG_DPI, constrained_layout=True)
     heat_im = None
     for ax, (title, mask, color) in zip(
         heat_axes,
         [
-            ("Inhibition", sweep_df["opto_amp"] <= 0.0, "tab:blue"),
-            ("Excitation", sweep_df["opto_amp"] >= 0.0, "tab:red"),
+            ("Inhibition", sweep_df["opto_amp"] <= 0.0, LIGHT_ON_INHIBITION_COLOR),
+            ("Excitation", sweep_df["opto_amp"] >= 0.0, LIGHT_ON_EXCITATION_COLOR),
         ],
         strict=False,
     ):
@@ -1739,7 +1755,7 @@ def _(
     ttype_order = [label for label in ("VG", "DS", "DM", "DL") if label in set(sweep_df["ttype_c"])]
     alpha_values = np.linspace(1.0, 0.35, max(len(ttype_order), 1))
     alpha_map = {label: float(alpha_values[idx]) for idx, label in enumerate(ttype_order)}
-    triangle_fig, triangle_ax = plt.subplots(figsize=(4, 4))
+    triangle_fig, triangle_ax = plt.subplots(figsize=(4, 4), dpi=FIG_DPI)
     _draw_triangle_axes(triangle_ax)
     for _, row in tri_mean.iterrows():
         x, y = _ternary_xy(row["pL"], row["pC"], row["pR"])
@@ -1802,7 +1818,7 @@ def _(
     triangle_fig.tight_layout()
 
     prob_fig, prob_axes = plt.subplots(
-        2, 3, figsize=(10, 4.0), sharey=True, constrained_layout=True
+        2, 3, figsize=(12, 8), dpi=FIG_DPI, sharey=True, constrained_layout=True
     )
     prob_cols = ["pL", "pC", "pR"]
     light_amp = selected_amp if not np.isclose(selected_amp, 0.0) else max(amps)
@@ -1822,7 +1838,7 @@ def _(
             group_width = 0.9
             hue_width = group_width / n_light
             group_centers = np.arange(n_choices, dtype=float)
-            light_color = "#C0392B" if light_amp > 0 else "#2F80ED"
+            light_color = LIGHT_ON_EXCITATION_COLOR if light_amp > 0 else LIGHT_ON_INHIBITION_COLOR
             for choice_idx, prob_col in enumerate(prob_cols):
                 data.extend([off[prob_col].to_numpy(), on[prob_col].to_numpy()])
                 positions.extend(
@@ -1831,12 +1847,12 @@ def _(
                         for light_idx in range(n_light)
                     ]
                 )
-                colors.extend(["#9CA3AF", light_color])
+                colors.extend([LIGHT_OFF_COLOR, light_color])
             custom_boxplot(
                 ax,
                 data,
                 positions=positions,
-                widths=hue_width * 1,
+                widths=hue_width * 0.86,
                 median_colors=colors,
                 box_alpha=1.0,
                 showfliers=False,
@@ -1851,11 +1867,11 @@ def _(
                 ax.set_ylabel("p(choice)")
             ax.spines["top"].set_visible(False)
             ax.spines["right"].set_visible(False)
-            ax.set_aspect(2)
+            ax.set_box_aspect(1)
     prob_fig.suptitle(f"Choice probability distributions: off vs on ({light_amp:+.3g})")
 
     line_fig, line_axes = plt.subplots(
-        1, 3, figsize=(12.0, 4.0), sharey=True, constrained_layout=True
+        1, 3, figsize=(12.0, 4.0), dpi=FIG_DPI, sharey=True, constrained_layout=True,
     )
 
     def _categorical_accuracy_panel(ax, group_col, title, data, order):
@@ -1864,12 +1880,12 @@ def _(
         on = panel[np.isclose(panel["opto_amp"], light_amp)]
         x = np.arange(len(order))
         for label, sub, color in (
-            ("light off", off, "#6B7280"),
-            ("light on", on, "#C0392B" if light_amp > 0 else "#2F80ED"),
+            ("light off", off, LIGHT_OFF_COLOR),
+            ("light on", on, LIGHT_ON_EXCITATION_COLOR if light_amp > 0 else LIGHT_ON_INHIBITION_COLOR),
         ):
             grouped = sub.groupby(group_col)["p_correct"].mean()
             y = np.asarray([grouped.get(category, np.nan) for category in order], dtype=float)
-            ax.plot(x, y, marker="o", lw=1.9, ms=4.0, color=color, label=label)
+            ax.plot(x, y, marker="o", lw=2.8, ms=7.0, color=color, label=label)
         ax.set_title(title)
         ax.set_xlabel(group_col)
         ax.set_xticks(x)
@@ -1883,9 +1899,10 @@ def _(
             label="chance",
         )
         ax.set_ylim(0, 1)
+        ax.set_box_aspect(1)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-        ax.legend(frameon=False, fontsize=8)
+        ax.legend(frameon=False)
 
     _categorical_accuracy_panel(
         line_axes[0],
@@ -1936,6 +1953,7 @@ def _(
 
 @app.cell
 def _(
+    FIG_DPI,
     RESULT_DIR,
     SIDE_COLORS,
     imageio,
@@ -1987,7 +2005,7 @@ def _(
     def write_triangle_gif():
         frames = []
         for opto_amp in sorted(float(v) for v in sweep_df["opto_amp"].unique()):
-            fig, ax = plt.subplots(figsize=(4.8, 4.2))
+            fig, ax = plt.subplots(figsize=(4, 4), dpi=FIG_DPI)
             _plot_triangle_frame(ax, sweep_df, sil_triangle_df, opto_amp)
             fig.tight_layout()
             fig.canvas.draw()
