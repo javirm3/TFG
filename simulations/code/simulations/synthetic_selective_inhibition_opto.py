@@ -2,7 +2,6 @@
 # dependencies = [
 #     "anywidget",
 #     "imageio",
-#     "jax[cpu]",
 #     "marimo",
 #     "matplotlib",
 #     "numpy",
@@ -27,22 +26,19 @@ def _():
     sys.modules.setdefault("numexpr", None)
     sys.modules.setdefault("bottleneck", None)
 
+    import marimo as mo
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    import traitlets
     import anywidget
     import imageio.v2 as imageio
     try:
         import jax
         import jax.numpy as jnp
     except ModuleNotFoundError:
-        import subprocess
-
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "jax[cpu]"])
-        import jax
-        import jax.numpy as jnp
-    import marimo as mo
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import pandas as pd
-    import traitlets
+        jax = None
+        jnp = np
 
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     return Path, anywidget, imageio, jax, jnp, mo, np, pd, plt, traitlets
@@ -1137,6 +1133,120 @@ def _(jax, jnp):
 
 
 @app.cell
+def _(np):
+    def _np_phi(x):
+        return np.where(
+            x <= 0.0,
+            0.0,
+            np.where(x <= 1.0, x * x, 2.0 * np.sqrt(np.maximum(x - 0.75, 0.0))),
+        ).astype(np.float32)
+
+    def _np_stimulus_window(ttype, stim, side, t, t1, t2, t3, t4, s_amp, s_d):
+        delay = np.maximum(ttype - 1, 0)
+        ss_on = np.where(delay == 0, t2, np.where(delay == 1, t1, 0.0))
+        ss_off = np.where(delay == 0, t3, np.where(delay == 1, t2, t1))
+        sm_on = np.where(delay == 0, t1, 0.0)
+        sm_off = np.where(delay == 0, t3, t2)
+        sl_on = np.zeros_like(t1)
+        sl_off = t3
+        onset = np.where(stim == 0, 0.0, np.where(stim == 1, ss_on, np.where(stim == 2, sm_on, sl_on)))
+        offset = np.where(stim == 0, t4, np.where(stim == 1, ss_off, np.where(stim == 2, sm_off, sl_off)))
+        plateau = (t >= onset) & (t <= offset)
+        tail = (t > offset) & (t <= offset + s_d) & (s_d > 0.0)
+        tail_value = s_amp * (1.0 - (t - offset) / np.maximum(s_d, 1e-6))
+        s_val = np.where(plateau, s_amp, np.where(tail, tail_value, 0.0)).astype(np.float32)
+        stim_input = np.zeros((side.shape[0], 3), dtype=np.float32)
+        stim_input[np.arange(side.shape[0]), side] = s_val
+        return stim_input
+
+    def _np_urgency_value(t, t1, t2, t3, t4, u_amp, u_baseline):
+        w1 = 1.0 / np.maximum(t1, 1e-6)
+        w2 = 1.0 / np.maximum(t2 - t1, 1e-6)
+        w3 = 1.0 / np.maximum(t3 - t2, 1e-6)
+        w4 = 1.0 / np.maximum(t4 - t3, 1e-6)
+        r1 = np.clip(t * w1, 0.0, 1.0)
+        r2 = np.clip((t - t1) * w2, 0.0, 1.0)
+        r3 = np.clip((t - t2) * w3, 0.0, 1.0)
+        r4 = np.clip((t - t3) * w4, 0.0, 1.0)
+        return (u_baseline + 0.25 * u_amp * (r1 + r2 + r3 + r4)).astype(np.float32)
+
+    def make_numpy_simulator(dt, n_steps):
+        t_grid = np.arange(n_steps, dtype=np.float32) * np.float32(dt)
+
+        def simulate_sweep(opto_amps, side, stim, ttype, t1, t2, t3, t4, noise, params, s_amp, u_amp, u_baseline, s_d):
+            opto_amps = np.asarray(opto_amps, dtype=np.float32)
+            side = np.asarray(side, dtype=np.int32)
+            stim = np.asarray(stim, dtype=np.int32)
+            ttype = np.asarray(ttype, dtype=np.int32)
+            t1 = np.asarray(t1, dtype=np.float32)
+            t2 = np.asarray(t2, dtype=np.float32)
+            t3 = np.asarray(t3, dtype=np.float32)
+            t4 = np.asarray(t4, dtype=np.float32)
+            noise = np.asarray(noise, dtype=np.float32)
+            p = {key: float(value) for key, value in params.items()}
+            n_trials = side.shape[0]
+            s_vec = np.asarray([p["sL"], p["sC"], p["sR"]], dtype=np.float32)
+            i0_i = np.asarray([p["i0_IL"], p["i0_IC"], p["i0_IR"]], dtype=np.float32)
+            w_ei = np.asarray(
+                [
+                    [0.0, p["w_EC_IL"], p["w_ER_IL"]],
+                    [p["w_EL_IC"], 0.0, p["w_ER_IC"]],
+                    [p["w_EL_IR"], p["w_EC_IR"], 0.0],
+                ],
+                dtype=np.float32,
+            )
+            w_ie = np.asarray(
+                [
+                    [p["w_IL_EL"], p["w_IC_EL"], p["w_IR_EL"]],
+                    [p["w_IL_EC"], p["w_IC_EC"], p["w_IR_EC"]],
+                    [p["w_IL_ER"], p["w_IC_ER"], p["w_IR_ER"]],
+                ],
+                dtype=np.float32,
+            )
+            choices = np.zeros((len(opto_amps), n_trials), dtype=np.int32)
+            valid = np.ones((len(opto_amps), n_trials), dtype=np.float32)
+            first_time = np.broadcast_to(t4[None, :], (len(opto_amps), n_trials)).astype(np.float32).copy()
+            e_final = np.zeros((len(opto_amps), n_trials, 3), dtype=np.float32)
+            e_last = np.zeros_like(e_final)
+            sqrt_dt = np.sqrt(np.float32(dt))
+            target_idx = int(p.get("opto_target", 1))
+            opto_mode = int(p.get("opto_mode", 1))
+            for amp_index, opto_amp in enumerate(opto_amps):
+                e = np.zeros((n_trials, 3), dtype=np.float32)
+                inh = np.zeros((n_trials, 3), dtype=np.float32)
+                opto_base = np.zeros(3, dtype=np.float32)
+                opto_base[target_idx] = opto_amp
+                opto_e = opto_base if opto_mode in (0, 2) else np.zeros(3, dtype=np.float32)
+                opto_i = opto_base if opto_mode in (1, 2) else np.zeros(3, dtype=np.float32)
+                for step_index, t in enumerate(t_grid):
+                    stim_input = _np_stimulus_window(ttype, stim, side, t, t1, t2, t3, t4, s_amp, s_d)
+                    urgency = _np_urgency_value(t, t1, t2, t3, t4, u_amp, u_baseline)[:, None]
+                    ext = stim_input + urgency
+                    xi_e = p["noise_amp"] * noise[:, step_index, :3] * sqrt_dt
+                    xi_i = p["noise_amp"] * noise[:, step_index, 3:] * sqrt_dt
+                    x_e = s_vec * e - inh @ w_ie.T + ext + opto_e
+                    x_i = e @ w_ei.T / 3.0 + i0_i + opto_i
+                    f_e = (-e + _np_phi(x_e)) / p["tau_e"]
+                    f_i = (-inh + _np_phi(x_i)) / p["tau_i"]
+                    e_pred = e + f_e * dt + xi_e
+                    i_pred = inh + f_i * dt + xi_i
+                    x_e2 = s_vec * e_pred - i_pred @ w_ie.T + ext + opto_e
+                    x_i2 = e_pred @ w_ei.T / 3.0 + i0_i + opto_i
+                    f_e2 = (-e_pred + _np_phi(x_e2)) / p["tau_e"]
+                    f_i2 = (-i_pred + _np_phi(x_i2)) / p["tau_i"]
+                    e = np.clip(e + 0.5 * (f_e + f_e2) * dt + xi_e, 0.0, 3.0)
+                    inh = np.clip(inh + 0.5 * (f_i + f_i2) * dt + xi_i, 0.0, 3.0)
+                e_final[amp_index] = e
+                e_last[amp_index] = e
+                choices[amp_index] = np.argmax(e, axis=1).astype(np.int32)
+            return choices, valid, first_time, e_final, e_last
+
+        return simulate_sweep
+
+    return (make_numpy_simulator,)
+
+
+@app.cell
 def _(
     DT,
     N_STEPS,
@@ -1145,8 +1255,10 @@ def _(
     U_amp_slider,
     U_baseline_slider,
     architecture_widget,
+    jax,
     jnp,
     make_jax_simulator,
+    make_numpy_simulator,
     make_synthetic_trials,
     n_trials_slider,
     np,
@@ -1157,10 +1269,13 @@ def _(
     seed_slider,
     trials_to_frame,
 ):
-    def _params_for_jax(raw_params):
+    def _params_for_backend(raw_params, use_jax):
         numeric = {}
         for key, value in raw_params.items():
-            numeric[key] = jnp.asarray(value, dtype=jnp.float32)
+            if use_jax:
+                numeric[key] = jnp.asarray(value, dtype=jnp.float32)
+            else:
+                numeric[key] = np.asarray(value, dtype=np.float32)
         return numeric
 
     def _summarize_results(trials, opto_amps, choices, valid, first_time):
@@ -1273,40 +1388,42 @@ def _(
         if not np.any(np.isclose(opto_amps, 0.0)):
             opto_amps = np.sort(np.append(opto_amps, np.float32(0.0))).astype(np.float32)
 
-        sim = make_jax_simulator(DT, N_STEPS)
-        params = _params_for_jax(architecture_widget.value["params"])
+        use_jax = jax is not None
+        sim = make_jax_simulator(DT, N_STEPS) if use_jax else make_numpy_simulator(DT, N_STEPS)
+        params = _params_for_backend(architecture_widget.value["params"], use_jax)
+        xp = jnp if use_jax else np
         choices, valid, first_time, _, _ = sim(
-            jnp.asarray(opto_amps, dtype=jnp.float32),
-            jnp.asarray(trials["side"], dtype=jnp.int32),
-            jnp.asarray(trials["stim"], dtype=jnp.int32),
-            jnp.asarray(trials["ttype"], dtype=jnp.int32),
-            jnp.asarray(trials["t1"], dtype=jnp.float32),
-            jnp.asarray(trials["t2"], dtype=jnp.float32),
-            jnp.asarray(trials["t3"], dtype=jnp.float32),
-            jnp.asarray(trials["t4"], dtype=jnp.float32),
-            jnp.asarray(noise, dtype=jnp.float32),
+            xp.asarray(opto_amps, dtype=xp.float32),
+            xp.asarray(trials["side"], dtype=xp.int32),
+            xp.asarray(trials["stim"], dtype=xp.int32),
+            xp.asarray(trials["ttype"], dtype=xp.int32),
+            xp.asarray(trials["t1"], dtype=xp.float32),
+            xp.asarray(trials["t2"], dtype=xp.float32),
+            xp.asarray(trials["t3"], dtype=xp.float32),
+            xp.asarray(trials["t4"], dtype=xp.float32),
+            xp.asarray(noise, dtype=xp.float32),
             params,
-            jnp.float32(S_amp_slider.value),
-            jnp.float32(U_amp_slider.value),
-            jnp.float32(U_baseline_slider.value),
-            jnp.float32(S_d_slider.value),
+            xp.float32(S_amp_slider.value),
+            xp.float32(U_amp_slider.value),
+            xp.float32(U_baseline_slider.value),
+            xp.float32(S_d_slider.value),
         )
         sweep = _summarize_results(trials, opto_amps, choices, valid, first_time)
         sil_choices, sil_valid, _, _, _ = sim(
-            jnp.asarray(opto_amps, dtype=jnp.float32),
-            jnp.asarray(trials["side"], dtype=jnp.int32),
-            jnp.asarray(trials["stim"], dtype=jnp.int32),
-            jnp.asarray(trials["ttype"], dtype=jnp.int32),
-            jnp.asarray(trials["t1"], dtype=jnp.float32),
-            jnp.asarray(trials["t2"], dtype=jnp.float32),
-            jnp.asarray(trials["t3"], dtype=jnp.float32),
-            jnp.asarray(trials["t4"], dtype=jnp.float32),
-            jnp.asarray(noise, dtype=jnp.float32),
+            xp.asarray(opto_amps, dtype=xp.float32),
+            xp.asarray(trials["side"], dtype=xp.int32),
+            xp.asarray(trials["stim"], dtype=xp.int32),
+            xp.asarray(trials["ttype"], dtype=xp.int32),
+            xp.asarray(trials["t1"], dtype=xp.float32),
+            xp.asarray(trials["t2"], dtype=xp.float32),
+            xp.asarray(trials["t3"], dtype=xp.float32),
+            xp.asarray(trials["t4"], dtype=xp.float32),
+            xp.asarray(noise, dtype=xp.float32),
             params,
-            jnp.float32(0.0),
-            jnp.float32(U_amp_slider.value),
-            jnp.float32(U_baseline_slider.value),
-            jnp.float32(S_d_slider.value),
+            xp.float32(0.0),
+            xp.float32(U_amp_slider.value),
+            xp.float32(U_baseline_slider.value),
+            xp.float32(S_d_slider.value),
         )
         sil_triangle = _summarize_sil_results(opto_amps, sil_choices, sil_valid)
         trial_df = trials_to_frame(trials)
