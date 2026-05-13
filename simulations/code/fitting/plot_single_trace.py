@@ -278,7 +278,7 @@ if __name__ == "__main__":
     # 1) por índice dentro del sujeto (0 = primera fila de ese subject)
     plot_single_trial_trace_with_SU(
         df_traces, params_df,
-        delayd="DL",
+        delayd="DS",
         stimd ="SS",
         subject="A83",
         trial_selector=0,

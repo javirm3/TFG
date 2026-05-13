@@ -340,24 +340,7 @@ def plot_delay_stim_1d_multipanel_all_subjects(
 
 
 
-def plot_delay_binned_1d_two_models(
-    dfA,
-    dfB,
-    model_name_A,
-    model_name_B,
-    subject=None,
-    n_bins=7,
-    color_A="tab:blue",
-    color_B="tab:orange",
-    save=True,
-    base_for_bins="union",   # "A" o "union"
-):
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
-    # ---------- helpers ----------
+def plot_delay_binned_1d_two_models(dfA, dfB, dfC, model_name_A, model_name_B, model_name_C, model_labels, subject=None, n_bins=7,  color_A="tab:blue", color_B="tab:orange", color_C="tab:green", save=True, base_for_bins="A"):
     def _filter_delay_stim(df, subject):
         df_delay = df[df["stimd_c"] == "SS"].copy()
         df_stim  = df[df["ttype_c"] == "DS"].copy()
@@ -416,6 +399,7 @@ def plot_delay_binned_1d_two_models(
     # ---------- preparar ----------
     A_delay, A_stim = _filter_delay_stim(dfA, subject)
     B_delay, B_stim = _filter_delay_stim(dfB, subject)
+    C_delay, C_stim = _filter_delay_stim(dfC, subject)
 
     if A_delay.empty or A_stim.empty:
         print(f"(sin datos válidos en A para {subject})")
@@ -423,14 +407,17 @@ def plot_delay_binned_1d_two_models(
     if B_delay.empty or B_stim.empty:
         print(f"(sin datos válidos en B para {subject})")
         return
+    if C_delay.empty or C_stim.empty:
+        print(f"(sin datos válidos en C para {subject})")
+        return
 
     # base para bins
     if base_for_bins == "A":
         base_delay = A_delay
         base_stim  = A_stim
     else:
-        base_delay = pd.concat([A_delay, B_delay], ignore_index=True)
-        base_stim  = pd.concat([A_stim,  B_stim],  ignore_index=True)
+        base_delay = pd.concat([A_delay, B_delay, C_delay], ignore_index=True)
+        base_stim  = pd.concat([A_stim,  B_stim, C_stim],  ignore_index=True)
 
     title_subj = subject if subject is not None else "All subjects"
 
@@ -441,23 +428,28 @@ def plot_delay_binned_1d_two_models(
     data_delay  = _agg_data(base_delay, edges_delay, centers_delay, xcol="delay_duration")
     modelA_delay = _agg_model(A_delay, edges_delay, centers_delay, xcol="delay_duration")
     modelB_delay = _agg_model(B_delay, edges_delay, centers_delay, xcol="delay_duration")
-
+    modelC_delay = _agg_model(C_delay, edges_delay, centers_delay, xcol="delay_duration")
     fig, ax = plt.subplots(figsize=(5, 5))
 
     sns.lineplot(
         data=modelA_delay, x="center", y="model_acc",
-        color=color_A, errorbar=("ci", 95), err_style="band",
-        ax=ax, label=model_name_A
+        color=color_A, errorbar=("ci", 95), err_style="band", label=model_labels[0],
+        ax=ax
     )
     sns.lineplot(
         data=modelB_delay, x="center", y="model_acc",
-        color=color_B, errorbar=("ci", 95), err_style="band",
-        ax=ax, label=model_name_B
+        color=color_B, errorbar=("ci", 95), err_style="band", label=model_labels[1],
+        ax=ax
+    )
+    sns.lineplot(
+        data=modelC_delay, x="center", y="model_acc",
+        color=color_C, errorbar=("ci", 95), err_style="band", label=model_labels[2],
+        ax=ax
     )
 
     sns.lineplot(
         data=data_delay, x="center", y="data_acc",
-        hue="center", palette=trunc_purples,
+        color="purple",
         marker="o", linewidth=0,
         errorbar=("ci", 95), err_style="bars",
         legend=False, ax=ax, zorder=10
@@ -473,7 +465,7 @@ def plot_delay_binned_1d_two_models(
     fig.tight_layout()
 
     if save:
-        fname = f"fig_delay_1d_{title_subj}_{model_name_A}_vs_{model_name_B}.pdf"
+        fname = f"fig_delay_1d_{title_subj}_{model_name_A}_vs_{model_name_B}_vs_{model_name_C}.pdf"
         out_path = get_plot_path("no binning", fname, model_name_A)
         fig.savefig(out_path, dpi=300)
     plt.close(fig)
@@ -485,23 +477,29 @@ def plot_delay_binned_1d_two_models(
     data_stim   = _agg_data(base_stim, edges_stim, centers_stim, xcol="stim_duration")
     modelA_stim = _agg_model(A_stim, edges_stim, centers_stim, xcol="stim_duration")
     modelB_stim = _agg_model(B_stim, edges_stim, centers_stim, xcol="stim_duration")
+    modelC_stim = _agg_model(C_stim, edges_stim, centers_stim, xcol="stim_duration")
 
     fig, ax = plt.subplots(figsize=(5, 5))
 
     sns.lineplot(
         data=modelA_stim, x="center", y="model_acc",
-        color=color_A, errorbar=("ci", 95), err_style="band",
-        ax=ax, label=model_name_A
+        color=color_A, errorbar=("ci", 95), err_style="band", label=model_labels[0],
+        ax=ax
     )
     sns.lineplot(
         data=modelB_stim, x="center", y="model_acc",
-        color=color_B, errorbar=("ci", 95), err_style="band",
-        ax=ax, label=model_name_B
+        color=color_B, errorbar=("ci", 95), err_style="band", label=model_labels[1],
+        ax=ax
+    )
+    sns.lineplot(
+        data=modelC_stim, x="center", y="model_acc",
+        color=color_C, errorbar=("ci", 95), err_style="band", label=model_labels[2],
+        ax=ax
     )
 
     sns.lineplot(
         data=data_stim, x="center", y="data_acc",
-        hue="center", palette=trunc_oranges,
+        color="orange",
         marker="o", linewidth=0,
         errorbar=("ci", 95), err_style="bars",
         legend=False, ax=ax, zorder=10

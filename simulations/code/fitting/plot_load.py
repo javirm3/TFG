@@ -501,7 +501,7 @@ def _plot_cat_panel(ax, df, group_col, order, title, xlabel, ylabel=None, palett
     colors = palette if palette else ["black"] * len(cats)
     for i, (xpos, yval, err) in enumerate(zip(x, md, sd)):
         ax.errorbar(xpos, yval, yerr=err, fmt="o",
-                    color=colors[i], ms=7, capsize=3)
+                    color=colors[i], )
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels if labels else cats)
@@ -515,15 +515,19 @@ def _plot_cat_panel(ax, df, group_col, order, title, xlabel, ylabel=None, palett
         ax.set_ylabel(ylabel)
 
 def plot_categorical_performance_all(df, model_name):
-    fig, axes = plt.subplots(1, 3, figsize=(10, 4), sharey=True)
-    ax1, ax2, ax3 = axes
-
+    # fig, axes = plt.subplots(1, 3, figsize=(10, 4), sharey=True)
+    # ax1, ax2, ax3 = axes
+    fig1, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))
+    fig2, ax2 = plt.subplots(nrows=1, ncols=1, figsize=(7, 8))
+    fig3, ax3 = plt.subplots(nrows=1, ncols=1, figsize=(7, 8))
     # =====================================================
     # a) Stimulus categories (TODOS los estímulos)
     # =====================================================
     palette_a = ['#230027','#C88FEC','#9C69A3','#C698CB','#EFD9F5']
-    labels_a  = ["Visual","Easy","Medium","Hard", "Silent"]
-    order_a   = ["VG","SL","SM","SS","SIL"]
+    labels_a  = ["Visual","Easy","Medium","Hard"]
+    # labels_a  = ['Visual','Easy','Medium','Hard', "Silent"]
+    order_a   = ["VG","SL","SM","SS"]
+    # order_a  = ["VG","SL","SM","SS", "SIL"]
 
     df_a = df.copy()
     _plot_cat_panel(ax1, df_a, "stimd_c", order_a, title="a) Trial difficulty", xlabel="Trial difficulty",           ylabel="Accuracy", palette=palette_a, labels=labels_a)
@@ -549,11 +553,22 @@ def plot_categorical_performance_all(df, model_name):
     _plot_cat_panel(ax3, df_c, "ttype_c", order_c, title="c) Delay duration", xlabel="Delay type", palette=palette_c,labels=labels_c)
 
     sns.despine()
-    fig.tight_layout()
+    # fig.tight_layout()
     fname = f"fig_categorical_perf_all.pdf"
-    out_path = get_plot_path("general", fname, model_name)
-    fig.savefig(out_path, dpi=300)
-    plt.close(fig)
+    # out_path = get_plot_path("general", fname, model_name)
+    # fig.savefig(out_path, dpi=300)
+    for fig in [fig1, fig2, fig3]:
+        print(f"  Guardando figura {fname}...")
+        sns.despine(fig=fig)
+        fig.tight_layout()
+    sns.set()
+    sns.set_style('white')
+    sns.set_style('ticks')
+    sns.set_context("poster", font_scale=1)
+    fig1.savefig("fig1.svg")
+    fig2.savefig("fig2.svg")
+    fig3.savefig("fig3.svg")
+    # plt.close(fig)
 
 def plot_categorical_strat_by_side(df, subject, model_name, df_silent = None, cond_col="stimd_c",
                                    cond_order=['VG', 'SL', 'SM', 'SS', 'SIL'], cond_labels=['Visual', 'Easy', 'Medium', 'Hard', 'Silent']):
@@ -1332,7 +1347,7 @@ def plot_traces_errors_chosen(df, model_name, kind_dir="traces",
         df_one = df_one[df_one["model_choice"].notna()].copy()
         df_one = df_one[df_one["x_c"] != df_one["model_choice"]].copy()  # errores del modelo
         df_one = df_one[df_one['stimd_c'] == 'SS']
-        df_one = df_one[df_one['ttype_c'] == 'DL']
+        df_one = df_one[df_one['ttype_c'] == 'DS']
         if df_one.empty:
             return None, None, None
 
@@ -1475,6 +1490,9 @@ def plot_traces_errors_chosen(df, model_name, kind_dir="traces",
 
     ax.plot(t, m_other, color="#A67C52", lw=2, label=f"Non chosen error")
     ax.fill_between(t, m_other-s_other, m_other+s_other, color="#A67C52", alpha=0.2)
+
+    ax.plot(t, m_win,   color="#6f6f6f", lw=2, label=f"Winning (model choice)")
+    ax.fill_between(t, m_win-s_win, m_win+s_win, color="#6f6f6f", alpha=0.2)
 
     ax.set_xlabel(f"Time (s) aligned to {'Response' if align == 'timepoint_4' else 'Corridor end'} (t=0)", fontsize=12)
     ax.set_ylabel("Population rate", fontsize=12)
@@ -1725,10 +1743,10 @@ def plot_traces_winning_correct_vs_error(df, model_name, subject=None, kind_dir=
     def _collect_traces(df_block, trace_col):
         traces, tps = [], []
         for _, row in df_block.iterrows():
-            if delayd is not None and row.get("ttype_c", None) != delayd:
-                continue
-            if stimd is not None and row.get("stimd_c", None) != stimd:
-                continue
+            # if delayd is not None and row.get("ttype_c", None) != delayd:
+            #     continue
+            # if stimd is not None and row.get("stimd_c", None) != stimd:
+            #     continue
             tp = row.get(align, None)
             if tp is None:
                 continue
@@ -1798,13 +1816,16 @@ def plot_traces_winning_correct_vs_error(df, model_name, subject=None, kind_dir=
     # ---------- GROUP ----------
     per_subj_corr = []
     per_subj_err  = []
-
+    df_s = df_s[df_s["subject"]!= "A84"]
     for s in sorted(df_s["subject"].unique()):
         df_sub = df_s[df_s["subject"] == s]
-
+        print(f"Subject {s}: {len(df_sub)}")
+        df_sub = df_sub[df_sub["ttype_c"] == delayd]
+        print(f"Subject {s}: {len(df_sub)}")
+        df_sub = df_sub[df_sub["stimd_c"] == "SS"]
+        print(f"Subject {s}: {len(df_sub)}")
         tr_corr, tp_corr = _collect_traces(df_sub, "trace_correct")
         tr_err,  tp_err  = _collect_traces(df_sub, "trace_error")
-
         per_subj_corr.append(_mean_sem_from_aligned(tr_corr, tp_corr, dt=dt, clip=clip))
         per_subj_err.append (_mean_sem_from_aligned(tr_err,  tp_err,  dt=dt, clip=clip))
 
@@ -1897,9 +1918,65 @@ if __name__ == "__main__":
     subjects = sorted(df["subject"].unique())
     print("Subjects:", subjects)
 
+
+    import numpy as np
+    import pandas as pd
+    import numpy as np
+
+    def brier_multiclass(p, y, eps=1e-12):
+        p = np.asarray(p, dtype=float)
+        y = np.asarray(y).astype(int)
+
+        p = np.clip(p, eps, 1.0)
+        p = p / p.sum(axis=1, keepdims=True)
+
+        T, C = p.shape
+        onehot = np.zeros((T, C))
+        onehot[np.arange(T), y] = 1.0
+
+        return np.mean(np.sum((p - onehot)**2, axis=1))
+    def compute_choice_metrics(df, y_col="r_c", p_cols=("pL","pC","pR"), classes=("L","C","R")):
+        dfm = df.copy()
+
+        # y verdadero en {0,1,2}
+        y_map = {c:i for i,c in enumerate(classes)}
+        y = (
+            dfm[y_col].astype(str).str.strip().str.upper()
+            .map(y_map).to_numpy()
+        )
+
+        P = dfm.loc[:, list(p_cols)].to_numpy(float)  # (N,3)
+
+        # filas válidas: y conocido + probs finitas
+        valid = np.isfinite(P).all(axis=1) & ~np.isnan(y)
+        yv = y[valid].astype(int)
+        Pv = P[valid]
+
+        # normaliza por si hay ligeros desajustes (opcional pero recomendable)
+        s = Pv.sum(axis=1, keepdims=True)
+        Pv = np.where(s > 0, Pv / s, Pv)
+
+        # Accuracy (hard): argmax
+        yhat = Pv.argmax(axis=1)
+        acc = (yhat == yv).mean() if len(yv) else np.nan
+
+        # Brier multiclase: mean ||p - onehot(y)||^2
+        Y = np.eye(3)[yv]
+        brier = brier_multiclass(P, yv)
+        # NLL por trial (por si quieres comprobar coherencia)
+        eps = 1e-12
+        nll = -np.mean(np.log(Pv[np.arange(len(yv)), yv] + eps)) if len(yv) else np.nan
+
+        return {
+            "N": int(len(yv)),
+            "acc_choice": float(acc),
+            "brier_choice": float(brier),
+            "nll_choice": float(nll),
+        }
+
     for subject in tqdm(subjects, desc="Plotting"):
         df_subj = df[df["subject"] == subject].copy()
-
+        print(compute_choice_metrics(df_subj))
         df_delay = df_subj[
             (df_subj["onset"] == 0)
         ].copy()
@@ -1937,23 +2014,26 @@ if __name__ == "__main__":
         plot_categorical_strat_by_side(df_subj, subject, MODEL_NAME, df_silent=df_silent_subj) # Para plot sin silent no pasar df_silent
         plot_delay_binned_1d(df=df_subj, subject=subject, model_name=MODEL_NAME, n_bins=N_X_BINS)
         plot_timepoint_deltas_binned_1d_overlay(df=df_subj, subject=subject, model_name=MODEL_NAME, n_bins=N_X_BINS)
-    plot_scatter_delay_stim(df, MODEL_NAME, show_bins=False)
-    plot_heatmaps_delay_stim(df, MODEL_NAME)
-    # plot_categorical_performance_all(df, MODEL_NAME)
-    plot_delay_binned_1d(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
-    plot_delay_binned_1d_1(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
-    plot_timepoint_deltas_binned_1d_overlay(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
-    from helpers.plots import plot_delay_stim_1d_multipanel_all_subjects, plot_delay_binned_1d_two_models
-    plot_delay_stim_1d_multipanel_all_subjects(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS, max_cols=5)
+    # plot_scatter_delay_stim(df, MODEL_NAME, show_bins=False)
+    # plot_heatmaps_delay_stim(df, MODEL_NAME)
+    plot_categorical_performance_all(df, MODEL_NAME)
+    # plot_delay_binned_1d(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
+    # plot_delay_binned_1d_1(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
+    # plot_timepoint_deltas_binned_1d_overlay(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS)
+    # from helpers.plots import plot_delay_stim_1d_multipanel_all_subjects, plot_delay_binned_1d_two_models
+    # plot_delay_stim_1d_multipanel_all_subjects(df=df, model_name=MODEL_NAME, n_bins=N_X_BINS, max_cols=5)
 
-    pathB = os.path.join(paths.PARAMS_DIR, f"df_externalU2_randomx0.parquet")
-    pathA = os.path.join(paths.PARAMS_DIR, f"df_spatial_reduced3.parquet")
-    dfA = parse_model_probs_column(pd.read_parquet(pathA), col="model")
-    dfB = parse_model_probs_column(pd.read_parquet(pathB), col="model")
+    # pathB = os.path.join(paths.PARAMS_DIR, f"df_externalU2_randomx0.parquet")
+    # pathA = os.path.join(paths.PARAMS_DIR, f"df_spatial_reduced3.parquet")
+    # pathC = os.path.join(paths.PARAMS_DIR, f"df_temporalU.parquet")
+    # dfA = parse_model_probs_column(pd.read_parquet(pathA), col="model")
+    # dfB = parse_model_probs_column(pd.read_parquet(pathB), col="model")
+    # dfC = parse_model_probs_column(pd.read_parquet(pathC), col="model")
 
-    plot_delay_binned_1d_two_models(dfA, dfB, model_name_A="spatial_reduced3", model_name_B="externalU2_randomx0",
-        # subject="A83",
-        n_bins=N_X_BINS, color_A="#1f77b4", color_B="#d62728",)
+    # plot_delay_binned_1d_two_models(dfA, dfB, dfC, model_name_A="spatial_reduced3", model_name_B="externalU2_randomx0", model_name_C = "temporalU",
+    #     model_labels=["Spatial", "External", "Temporal"],
+    #     # subject="A83", 
+    #     n_bins=N_X_BINS, color_A="#e377c2", color_B="#0053CE", color_C="#2ca02c")
 
 
     traces_path = os.path.join(paths.PARAMS_DIR, f"df_traces_{MODEL_NAME}.parquet")
@@ -1961,21 +2041,21 @@ if __name__ == "__main__":
     df_traces = pd.read_parquet(traces_path)
     df_traces_ce = pd.read_parquet(traces_ce_path)
     subjects = sorted(df_traces["subject"].unique())
-    for subject in tqdm(subjects, desc="Plotting traces"):
-        df_subj = df_traces[df_traces["subject"] == subject].copy()
-        df_subj_ce = df_traces_ce[df_traces_ce["subject"] == subject].copy()
-        for align in ["timepoint_3", "timepoint_4"]:
-            plot_traces_correct_by_delay(df_subj, subject=subject, model_name=MODEL_NAME, n_bins=7, align=align)
-            plot_traces_winning_correct_vs_error(df_subj_ce, subject=subject, model_name=MODEL_NAME, align=align)
-            plot_traces_errors_chosen(df_subj, subject=subject, model_name=MODEL_NAME, align=align)
-    for align in ["timepoint_3", "timepoint_4"]:
-        plot_traces_correct_by_delay(df_traces,  model_name=MODEL_NAME, n_bins=7, align=align)
-        plot_traces_winning_correct_vs_error(df_traces_ce, model_name=MODEL_NAME, align=align)
-        plot_traces_errors_chosen(df_traces, model_name=MODEL_NAME, align=align)
+    # for subject in tqdm(subjects, desc="Plotting traces"):
+    #     df_subj = df_traces[df_traces["subject"] == subject].copy()
+    #     df_subj_ce = df_traces_ce[df_traces_ce["subject"] == subject].copy()
+    #     for align in ["timepoint_3", "timepoint_4"]:
+    #         plot_traces_correct_by_delay(df_subj, subject=subject, model_name=MODEL_NAME, n_bins=7, align=align)
+    #         plot_traces_winning_correct_vs_error(df_subj_ce, subject=subject, model_name=MODEL_NAME, align=align)
+    #         plot_traces_errors_chosen(df_subj, subject=subject, model_name=MODEL_NAME, align=align)
+    # for align in ["timepoint_3", "timepoint_4"]:
+    #     plot_traces_correct_by_delay(df_traces,  model_name=MODEL_NAME, n_bins=7, align=align)
+    #     plot_traces_winning_correct_vs_error(df_traces_ce, model_name=MODEL_NAME, align=align)
+    #     plot_traces_errors_chosen(df_traces, model_name=MODEL_NAME, align=align)
     
     for delayd in ['DS', 'DM', 'DL']:
-        plot_traces_winning_correct_vs_error(df_traces, model_name=MODEL_NAME, delayd=delayd, align="timepoint_4")
-        plot_traces_winning_correct_vs_error(df_traces, model_name=MODEL_NAME, delayd=delayd, align="timepoint_3")
+        plot_traces_winning_correct_vs_error(df_traces, model_name=MODEL_NAME, delayd=delayd,stimd="SS", align="timepoint_4")
+        plot_traces_winning_correct_vs_error(df_traces, model_name=MODEL_NAME, delayd=delayd,stimd="SS", align="timepoint_3")
     # plot_traces_correct_by_delay(df_traces, subject="All_Subjects", model_name=MODEL_NAME, n_bins=7)
     # plot_traces_winning_correct_vs_error(df_traces, subject="All_Subjects", model_name=MODEL_NAME)
     # plot_traces_errors_winning_good_bad(df_traces, subject="All_Subjects", model_name=MODEL_NAME)

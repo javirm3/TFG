@@ -1,0 +1,61 @@
+{
+  "config": {
+    "schema_version": 3,
+    "model": "temporalU",
+    "backend": "numba",
+    "target_selector": "both",
+    "magnitude": 0.5,
+    "M": 200,
+    "numba_threads": 8,
+    "dt": 0.0025,
+    "thresholds": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "balance_max_trials_per_subject": 10000,
+    "balance_cond_columns": [
+      "stimd_c",
+      "ttype_c"
+    ],
+    "balance_seed": 42
+  },
+  "csv": "opto_trials_d1597a6f5245c01e.csv",
+  "rows": 72,
+  "n_param_rows_total": 9,
+  "n_subjects": 9,
+  "n_data_subjects": 9,
+  "data_subjects": [
+    "A83",
+    "A84",
+    "A86",
+    "A87",
+    "A89",
+    "A92",
+    "A93",
+    "A95",
+    "A96"
+  ],
+  "n_trials_filtered": 134183,
+  "n_trials_balanced": 68604,
+  "balance_max_trials_per_subject": 10000,
+  "balance_cond_columns": [
+    "stimd_c",
+    "ttype_c"
+  ],
+  "balance_seed": 42,
+  "progress_total_steps": 45,
+  "progress_steps_per_subject": 5,
+  "subjects": [
+    "A83",
+    "A84",
+    "A86",
+    "A87",
+    "A89",
+    "A92",
+    "A93",
+    "A95",
+    "A96"
+  ],
+  "created_at": "2026-05-06T16:28:22"
+}

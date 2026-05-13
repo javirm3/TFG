@@ -1,0 +1,139 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.22.5",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "25081f93748454339f38f09b0fa0f91e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "46e6a79b65cda1d2c6c67e956c9fb792",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "50c9d6a046ba0e5e1846dcf67511b8d8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e738565ef2f1265e4f98e3bfb000673a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "f5153aa6d1542a4b3702f6a14f5f4cb7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "ed45c3e391e9a61f283fb79b374c6a1d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='PKri-1' random-id='aa7e1a6a-a677-6242-2767-97465ac1b58f'><marimo-radio data-initial-value='&quot;Spatial reduced 3&quot;' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Parameter model&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;Spatial reduced 3&quot;,&quot;Temporal&quot;]' data-inline='true' data-disabled='false'></marimo-radio></marimo-ui-element><marimo-ui-element object-id='PKri-3' random-id='11aff23c-1f15-b1d2-c8b5-72eaee26bd57'><marimo-radio data-initial-value='&quot;Numba&quot;' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Simulator backend&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;Numba&quot;,&quot;Julia&quot;]' data-inline='true' data-disabled='false'></marimo-radio></marimo-ui-element><div style='display: flex;flex: 1;flex-direction: row;justify-content: space-between;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='PKri-0' random-id='127f3450-7c22-0d04-043a-eede4a6ea1ac'><marimo-slider data-initial-value='0.08' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Opto current magnitude&lt;/span&gt;&lt;/span&gt;&quot;' data-start='0.0' data-stop='2.0' data-step='0.02' data-steps='[]' data-debounce='false' data-disabled='false' data-orientation='&quot;horizontal&quot;' data-show-value='true' data-include-input='false' data-full-width='false'></marimo-slider></marimo-ui-element><marimo-ui-element object-id='PKri-4' random-id='4b8fa060-c0ea-06fe-b3b5-859eefbcde7b'><marimo-slider data-initial-value='200' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Monte Carlo reps&lt;/span&gt;&lt;/span&gt;&quot;' data-start='10' data-stop='500' data-step='10' data-steps='[]' data-debounce='false' data-disabled='false' data-orientation='&quot;horizontal&quot;' data-show-value='true' data-include-input='false' data-full-width='false'></marimo-slider></marimo-ui-element></div><div style='display: flex;flex: 1;flex-direction: row;justify-content: space-between;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='PKri-2' random-id='b58f6d75-42b3-2aaf-2d40-a2190dfc9032'><marimo-radio data-initial-value='&quot;Both&quot;' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Trial groups&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;Both&quot;,&quot;Center&quot;,&quot;Sides&quot;]' data-inline='true' data-disabled='false'></marimo-radio></marimo-ui-element><marimo-ui-element object-id='PKri-5' random-id='4991a99c-2b14-4eb6-1087-1fe6b0d32fcd'><marimo-slider data-initial-value='8' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Numba threads&lt;/span&gt;&lt;/span&gt;&quot;' data-start='1' data-stop='12' data-step='1' data-steps='[]' data-debounce='false' data-disabled='false' data-orientation='&quot;horizontal&quot;' data-show-value='true' data-include-input='false' data-full-width='false'></marimo-slider></marimo-ui-element><marimo-ui-element object-id='PKri-6' random-id='d73b3bfa-d74f-0692-17d2-844655a5ad1a'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Run simulation&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><marimo-ui-element object-id='PKri-7' random-id='09aeb5bb-92be-82c3-9d0b-1e68ea5a257b'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Load saved result&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element></div></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "b4b666b49c0969e9ebdd4adbc49c4f8f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Data:</strong> <code>/Users/javierrodriguezmartinez/Documents/Mates/Mates4/TFG/simulations/datasets/df_filtered.csv</code></span>\n<span class=\"paragraph\"><strong>Saved result cache:</strong> <code>/Users/javierrodriguezmartinez/Documents/Mates/Mates4/TFG/simulations/simulations/opto_trial_results</code></span>\n<span class=\"paragraph\"><strong>Parameter models:</strong> Spatial reduced 3 (<code>spatial_reduced3</code>), Temporal (<code>temporalU</code>)</span>\n<span class=\"paragraph\">For repeated fits in a model folder, the notebook uses the lowest <code>nll/trial</code> row per subject.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "6128471e6d46a2e86c6063a1a7ccfa37",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "aee1dcd210c25709776c042be0c7fc4b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Run the simulation to create the optogenetic boxplots.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "e4a9aa3a17d58ca5437b3060dca566e0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Result status:</strong> idle</span>\n<span class=\"paragraph\"><strong>Config:</strong> model <code>spatial_reduced3</code>, backend <code>numba</code>,\nopto population <code>center</code>, trial groups <code>both</code>,\nmagnitude <code>0.34</code>,\nM <code>200</code>, numba threads <code>8</code></span>\n<span class=\"paragraph\"><strong>Cache CSV:</strong> <code>/Users/javierrodriguezmartinez/Documents/Mates/Mates4/TFG/simulations/simulations/opto_trial_results/opto_trials_f442b65956c81fe8.csv</code></span>\n<span class=\"paragraph\"><strong>Simulation dataframe subjects (0):</strong>\nnot loaded yet</span>\n<span class=\"paragraph\"><strong>Trial subsample:</strong> 0 balanced trials from\n0 filtered trials, capped at\n10000 per subject over\n<code>stimd_c, ttype_c</code>.</span>\n<span class=\"paragraph\"><strong>Subjects simulated/plotted (0):</strong>\nnone</span>\n<span class=\"paragraph\"><strong>Progress steps:</strong> 0 total =\n0 subjects x 0 steps per subject\n(baseline opto-off + excitation-on/inhibition-on for each selected trial group).</span>\n<span class=\"paragraph\"><strong>Rows:</strong> 0 | <strong>parameter rows:</strong> 0 |\n<strong>invalid frac_correct rows:</strong> 0</span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

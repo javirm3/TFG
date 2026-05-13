@@ -88,7 +88,7 @@ def get_U_fn(amplitude, baseline, onset, offset):
 
 def get_U_ext_fn(amplitude, onset, offset):
     def U_ext(t):
-        u = np.zeros_like(t)
+        u =  np.zeros_like(t)
         active = (t >= onset) & (t <= offset)
         u[active] = amplitude
         return u
