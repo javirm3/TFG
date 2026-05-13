@@ -2,7 +2,7 @@
 # dependencies = [
 #     "anywidget",
 #     "imageio",
-#     "jax",
+#     "jax[cpu]",
 #     "marimo",
 #     "matplotlib",
 #     "numpy",
@@ -29,8 +29,15 @@ def _():
 
     import anywidget
     import imageio.v2 as imageio
-    import jax
-    import jax.numpy as jnp
+    try:
+        import jax
+        import jax.numpy as jnp
+    except ModuleNotFoundError:
+        import subprocess
+
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "jax[cpu]"])
+        import jax
+        import jax.numpy as jnp
     import marimo as mo
     import matplotlib.pyplot as plt
     import numpy as np
