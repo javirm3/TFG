@@ -23,12 +23,9 @@ def _():
     import sys
     import warnings
     from pathlib import Path
-
-    sys.modules.setdefault("numexpr", None)
-    sys.modules.setdefault("bottleneck", None)
-
     import marimo as mo
     import matplotlib.pyplot as plt
+    import seaborn as sns
     import numpy as np
     import pandas as pd
     import traitlets
@@ -42,7 +39,7 @@ def _():
         jnp = np
 
     warnings.filterwarnings("ignore", category=RuntimeWarning)
-    return Path, anywidget, imageio, jax, jnp, mo, np, pd, plt, traitlets
+    return Path, anywidget, imageio, jax, jnp, mo, np, pd, plt, sns, traitlets
 
 
 @app.cell
@@ -962,6 +959,7 @@ def _(jax, jnp):
             jnp.where(x <= 1.0, x * x, 2.0 * jnp.sqrt(jnp.maximum(x - 0.75, 0.0))),
         )
 
+
     def _stimulus_window(ttype, stim, side, t, t1, t2, t3, t4, s_amp, s_d):
         # Codes match the original Julia helper:
         # stim: 0 VG, 1 SS, 2 SM, 3 SL; delay: 0 DS, 1 DM, 2 DL.
@@ -990,6 +988,7 @@ def _(jax, jnp):
         s_val = jnp.where(plateau, s_amp, jnp.where(tail, tail_value, 0.0))
         return jax.nn.one_hot(side, 3, dtype=jnp.float32) * s_val
 
+
     def _urgency_value(t, t1, t2, t3, t4, u_amp, u_baseline):
         w1 = 1.0 / jnp.maximum(t1, 1e-6)
         w2 = 1.0 / jnp.maximum(t2 - t1, 1e-6)
@@ -1000,6 +999,7 @@ def _(jax, jnp):
         r3 = jnp.clip((t - t2) * w3, 0.0, 1.0)
         r4 = jnp.clip((t - t3) * w4, 0.0, 1.0)
         return u_baseline + 0.25 * u_amp * (r1 + r2 + r3 + r4)
+
 
     def _single_trial(
         opto_amp,
@@ -1024,16 +1024,10 @@ def _(jax, jnp):
         e0 = jnp.zeros(3, dtype=jnp.float32)
         i0 = jnp.zeros(3, dtype=jnp.float32)
         state0 = (e0, i0)
-        opto_base_vec = jax.nn.one_hot(
-            params["opto_target"].astype(jnp.int32), 3, dtype=jnp.float32
-        ) * opto_amp
+        opto_base_vec = jax.nn.one_hot(params["opto_target"].astype(jnp.int32), 3, dtype=jnp.float32) * opto_amp
         opto_mode = params["opto_mode"].astype(jnp.int32)
-        opto_e_vec = opto_base_vec * jnp.where(
-            (opto_mode == 0) | (opto_mode == 2), 1.0, 0.0
-        )
-        opto_i_vec = opto_base_vec * jnp.where(
-            (opto_mode == 1) | (opto_mode == 2), 1.0, 0.0
-        )
+        opto_e_vec = opto_base_vec * jnp.where((opto_mode == 0) | (opto_mode == 2), 1.0, 0.0)
+        opto_i_vec = opto_base_vec * jnp.where((opto_mode == 1) | (opto_mode == 2), 1.0, 0.0)
         sqrt_dt = jnp.sqrt(dt)
 
         def step(carry, inputs):
@@ -1042,9 +1036,7 @@ def _(jax, jnp):
             stim_input = _stimulus_window(ttype, stim, side, t, t1, t2, t3, t4, s_amp, s_d)
             urgency = _urgency_value(t, t1, t2, t3, t4, u_amp, u_baseline)
             ext = stim_input + urgency
-            s_vec = jnp.asarray(
-                [params["sL"], params["sC"], params["sR"]], dtype=jnp.float32
-            )
+            s_vec = jnp.asarray([params["sL"], params["sC"], params["sR"]], dtype=jnp.float32)
             i0_i = jnp.asarray(
                 [params["i0_IL"], params["i0_IC"], params["i0_IR"]],
                 dtype=jnp.float32,
@@ -1074,13 +1066,14 @@ def _(jax, jnp):
         valid = jnp.array(1.0, dtype=jnp.float32)
         return final_choice, valid, t4, e_final, e_hist[-1]
 
+
     def make_jax_simulator(dt, n_steps):
         t_grid = jnp.arange(n_steps, dtype=jnp.float32) * jnp.float32(dt)
 
         @jax.jit
         def simulate_sweep(
-            opto_amps,
             side,
+            opto_amps,
             stim,
             ttype,
             t1,
@@ -1596,6 +1589,7 @@ def _(
     np,
     plt,
     sil_triangle_df,
+    sns,
     sweep_df,
     triangle_amp_selector,
 ):
@@ -1653,8 +1647,7 @@ def _(
         ax.set_xlim(-1, 1)
         ax.set_ylim(-1, 1)
         ax.set_aspect("equal")
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
+        sns.despine()
         ax.legend(frameon=False, fontsize=8)
         return pts
 
@@ -1865,8 +1858,7 @@ def _(
             ax.set_title(f"{ttype}, stim {side}")
             if col_idx == 0:
                 ax.set_ylabel("p(choice)")
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
+            sns.despine()
             ax.set_box_aspect(1)
     prob_fig.suptitle(f"Choice probability distributions: off vs on ({light_amp:+.3g})")
 
@@ -1900,8 +1892,7 @@ def _(
         )
         ax.set_ylim(0, 1)
         ax.set_box_aspect(1)
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
+        sns.despine()
         ax.legend(frameon=False)
 
     _categorical_accuracy_panel(
