@@ -217,12 +217,15 @@ def default_params():
         "sL": 1.00,
         "sC": 1.00,
         "sR": 1.00,
+        "w_EL_IL": 1.00,
         "w_EL_IC": 1.00,
         "w_EL_IR": 1.00,
         "w_EC_IL": 1.00,
+        "w_EC_IC": 1.00,
         "w_EC_IR": 1.00,
         "w_ER_IL": 1.00,
         "w_ER_IC": 1.00,
+        "w_ER_IR": 1.00,
         "w_IL_EL": 1.00,
         "w_IL_EC": 1.00,
         "w_IL_ER": 1.00,
@@ -257,9 +260,9 @@ def _(architecture_widget, mo):
         $$\tau \dot r_L = -r_L + \phi\!\left(s_L r_L - w_{I_L E_L}r_{I_L} - w_{I_C E_L}r_{I_C} - w_{I_R E_L}r_{I_R} + I_L(t)\right)$$
         $$\tau \dot r_C = -r_C + \phi\!\left(s_C r_C - w_{I_L E_C}r_{I_L} - w_{I_C E_C}r_{I_C} - w_{I_R E_C}r_{I_R} + I_C(t)\right)$$
         $$\tau \dot r_R = -r_R + \phi\!\left(s_R r_R - w_{I_L E_R}r_{I_L} - w_{I_C E_R}r_{I_C} - w_{I_R E_R}r_{I_R} + I_R(t)\right)$$
-        $$\tau \dot r_{I_L} = -r_{I_L} + \phi\!\left(\frac{w_{E_C I_L}}{3}r_C + \frac{w_{E_R I_L}}{3}r_R + b_{I_L}\right)$$
-        $$\tau \dot r_{I_C} = -r_{I_C} + \phi\!\left(\frac{w_{E_L I_C}}{3}r_L + \frac{w_{E_R I_C}}{3}r_R + b_{I_C} + I_{\mathrm{opto}}(t)\right)$$
-        $$\tau \dot r_{I_R} = -r_{I_R} + \phi\!\left(\frac{w_{E_L I_R}}{3}r_L + \frac{w_{E_C I_R}}{3}r_C + b_{I_R}\right)$$"""
+        $$\tau \dot r_{I_L} = -r_{I_L} + \phi\!\left(\frac{w_{E_L I_L}}{3}r_L + \frac{w_{E_C I_L}}{3}r_C + \frac{w_{E_R I_L}}{3}r_R + b_{I_L}\right)$$
+        $$\tau \dot r_{I_C} = -r_{I_C} + \phi\!\left(\frac{w_{E_L I_C}}{3}r_L + \frac{w_{E_C I_C}}{3}r_C + \frac{w_{E_R I_C}}{3}r_R + b_{I_C} + I_{\mathrm{opto}}(t)\right)$$
+        $$\tau \dot r_{I_R} = -r_{I_R} + \phi\!\left(\frac{w_{E_L I_R}}{3}r_L + \frac{w_{E_C I_R}}{3}r_C + \frac{w_{E_R I_R}}{3}r_R + b_{I_R}\right)$$"""
     )
 
     def _fmt(value):
@@ -273,11 +276,11 @@ def _(architecture_widget, mo):
 
         $$\phi(x)=\begin{{cases}}0,&x\le 0\\x^2,&0<x\le 1\\2\sqrt{{x-0.75}},&x>1\end{{cases}}$$
         $${_fmt(params["tau_e"])}\,\dot r_L = -r_L + \phi\!\left({_fmt(params["sL"])}r_L - {_fmt(params["w_IL_EL"])}r_{{I_L}} - {_fmt(params["w_IC_EL"])}r_{{I_C}} - {_fmt(params["w_IR_EL"])}r_{{I_R}} + I_L(t)\right)$$
-        $${_fmt(params["tau_e"])}\,\dot r_C = -r_C + \phi\!\left({_fmt(params["sC"])}r_C - {_fmt(params["w_IL_EC"])}r_{{I_L}} - {_fmt(params["w_IC_EC"])}r_{{I_C}} - {_fmt(params["w_IR_EC"])}r_{{I_R}} + I_C(t)\right)$$
+        $${_fmt(params["tau_e"])}\,\dot r_C = -r_C + \phi\!\left({_fmt(params["sC"])}r_C - {_fmt(params["w_IL_EC"])}r_{{I_L}} - {_fmt(params["w_IC_EC"])}r_{{I_C}} - {_fmt(params["w_IR_EC"])}r_{{I_R}} + I_C(t)+I_{{\mathrm{{opto}}}}(t)\right)$$
         $${_fmt(params["tau_e"])}\,\dot r_R = -r_R + \phi\!\left({_fmt(params["sR"])}r_R - {_fmt(params["w_IL_ER"])}r_{{I_L}} - {_fmt(params["w_IC_ER"])}r_{{I_C}} - {_fmt(params["w_IR_ER"])}r_{{I_R}} + I_R(t)\right)$$
-        $${_fmt(params["tau_i"])}\,\dot r_{{I_L}} = -r_{{I_L}} + \phi\!\left({_fmt(params["w_EC_IL"] / 3.0)}r_C + {_fmt(params["w_ER_IL"] / 3.0)}r_R + {_fmt(params["i0_IL"])}\right)$$
-        $${_fmt(params["tau_i"])}\,\dot r_{{I_C}} = -r_{{I_C}} + \phi\!\left({_fmt(params["w_EL_IC"] / 3.0)}r_L + {_fmt(params["w_ER_IC"] / 3.0)}r_R + {_fmt(params["i0_IC"])} + I_{{\mathrm{{opto}}}}(t)\right)$$
-        $${_fmt(params["tau_i"])}\,\dot r_{{I_R}} = -r_{{I_R}} + \phi\!\left({_fmt(params["w_EL_IR"] / 3.0)}r_L + {_fmt(params["w_EC_IR"] / 3.0)}r_C + {_fmt(params["i0_IR"])}\right)$$
+        $${_fmt(params["tau_i"])}\,\dot r_{{I_L}} = -r_{{I_L}} + \phi\!\left({_fmt(params["w_EL_IL"] / 3.0)}r_L + {_fmt(params["w_EC_IL"] / 3.0)}r_C + {_fmt(params["w_ER_IL"] / 3.0)}r_R + {_fmt(params["i0_IL"])}\right)$$
+        $${_fmt(params["tau_i"])}\,\dot r_{{I_C}} = -r_{{I_C}} + \phi\!\left({_fmt(params["w_EL_IC"] / 3.0)}r_L + {_fmt(params["w_EC_IC"] / 3.0)}r_C + {_fmt(params["w_ER_IC"] / 3.0)}r_R + {_fmt(params["i0_IC"])} + I_{{\mathrm{{opto}}}}(t)\right)$$
+        $${_fmt(params["tau_i"])}\,\dot r_{{I_R}} = -r_{{I_R}} + \phi\!\left({_fmt(params["w_EL_IR"] / 3.0)}r_L + {_fmt(params["w_EC_IR"] / 3.0)}r_C + {_fmt(params["w_ER_IR"] / 3.0)}r_R + {_fmt(params["i0_IR"])}\right)$$
         """
     )
 
@@ -322,10 +325,14 @@ def _(anywidget, mo, traitlets):
             "w_IR_EL", "w_IR_EC", "w_IR_ER",
           ];
           const excitatoryToInhibitoryKeys = [
-            "w_EL_IC", "w_EL_IR",
-            "w_EC_IL", "w_EC_IR",
-            "w_ER_IL", "w_ER_IC",
+            "w_EL_IL", "w_EL_IC", "w_EL_IR",
+            "w_EC_IL", "w_EC_IC", "w_EC_IR",
+            "w_ER_IL", "w_ER_IC", "w_ER_IR",
           ];
+          const selfExcitatoryToInhibitoryKeys = ["w_EL_IL", "w_EC_IC", "w_ER_IR"];
+          const crossExcitatoryToInhibitoryKeys = excitatoryToInhibitoryKeys.filter(
+            (key) => !selfExcitatoryToInhibitoryKeys.includes(key)
+          );
           const selfInhibitoryKeys = ["w_IL_EL", "w_IC_EC", "w_IR_ER"];
           const crossInhibitoryKeys = inhibitoryToExcitatoryKeys.filter(
             (key) => !selfInhibitoryKeys.includes(key)
@@ -371,12 +378,15 @@ def _(anywidget, mo, traitlets):
           ];
 
           const edgeControls = [
+            ["w_EL_IL", "E_L->I_L", 0, 2.5, 0.02],
             ["w_EL_IC", "E_L->I_C", 0, 2.5, 0.02],
             ["w_EL_IR", "E_L->I_R", 0, 2.5, 0.02],
             ["w_EC_IL", "E_C->I_L", 0, 2.5, 0.02],
+            ["w_EC_IC", "E_C->I_C", 0, 2.5, 0.02],
             ["w_EC_IR", "E_C->I_R", 0, 2.5, 0.02],
             ["w_ER_IL", "E_R->I_L", 0, 2.5, 0.02],
             ["w_ER_IC", "E_R->I_C", 0, 2.5, 0.02],
+            ["w_ER_IR", "E_R->I_R", 0, 2.5, 0.02],
             ["w_IL_EL", "I_L->E_L", 0, 2.5, 0.02],
             ["w_IL_EC", "I_L->E_C", 0, 2.5, 0.02],
             ["w_IL_ER", "I_L->E_R", 0, 2.5, 0.02],
@@ -392,6 +402,8 @@ def _(anywidget, mo, traitlets):
             ["all_inhibition", "all I->E", inhibitoryToExcitatoryKeys, 0, 2.5, 0.02],
             ["cross_inhibition", "cross I->E", crossInhibitoryKeys, 0, 2.5, 0.02],
             ["self_inhibition", "self I->E", selfInhibitoryKeys, 0, 2.5, 0.02],
+            ["cross_excitation", "E->other I", crossExcitatoryToInhibitoryKeys, 0, 2.5, 0.02],
+            ["self_excitation", "E->own I", selfExcitatoryToInhibitoryKeys, 0, 2.5, 0.02],
           ];
           const optoModes = [
             [0, "Opto E_C"],
@@ -404,18 +416,23 @@ def _(anywidget, mo, traitlets):
             I_L: [198, 186], I_C: [240, 154], I_R: [282, 186],
           };
           const edges = [
+            ["E_L", "I_L", "w_EL_IL", "excit", 0],
             ["E_L", "I_C", "w_EL_IC", "excit", -58], ["E_L", "I_R", "w_EL_IR", "excit", 36],
-            ["E_C", "I_L", "w_EC_IL", "excit", 78], ["E_C", "I_R", "w_EC_IR", "excit", -78],
+            ["E_C", "I_L", "w_EC_IL", "excit", 78], ["E_C", "I_C", "w_EC_IC", "excit", 0], ["E_C", "I_R", "w_EC_IR", "excit", -78],
             ["E_R", "I_L", "w_ER_IL", "excit", -36], ["E_R", "I_C", "w_ER_IC", "excit", 58],
+            ["E_R", "I_R", "w_ER_IR", "excit", 0],
             ["I_L", "E_L", "w_IL_EL", "inhib", 0], ["I_L", "E_C", "w_IL_EC", "inhib", -52], ["I_L", "E_R", "w_IL_ER", "inhib", 62],
             ["I_C", "E_L", "w_IC_EL", "inhib", -50], ["I_C", "E_C", "w_IC_EC", "inhib", 0], ["I_C", "E_R", "w_IC_ER", "inhib", 50],
             ["I_R", "E_L", "w_IR_EL", "inhib", -62], ["I_R", "E_C", "w_IR_EC", "inhib", 52], ["I_R", "E_R", "w_IR_ER", "inhib", 0],
           ];
           const edgeOffsets = {
+            w_EL_IL: {endAngleDeg: 150},
             w_EL_IC: {endAngleDeg: 150},
             w_EC_IL: {endAngleDeg: 150},
+            w_EC_IC: {endAngleDeg: 90},
             w_EC_IR: {endAngleDeg: 40},
             w_ER_IC: {endAngleDeg: 40},
+            w_ER_IR: {endAngleDeg: 40},
             w_IL_EC: {sx: -18, sy: 0},
             w_IR_EC: {sx: 18, sy: 0},
           };
@@ -1072,8 +1089,8 @@ def _(jax, jnp):
 
         @jax.jit
         def simulate_sweep(
-            side,
             opto_amps,
+            side,
             stim,
             ttype,
             t1,
@@ -1089,9 +1106,9 @@ def _(jax, jnp):
         ):
             w_ei = jnp.asarray(
                 [
-                    [0.0, params["w_EC_IL"], params["w_ER_IL"]],
-                    [params["w_EL_IC"], 0.0, params["w_ER_IC"]],
-                    [params["w_EL_IR"], params["w_EC_IR"], 0.0],
+                    [params["w_EL_IL"], params["w_EC_IL"], params["w_ER_IL"]],
+                    [params["w_EL_IC"], params["w_EC_IC"], params["w_ER_IC"]],
+                    [params["w_EL_IR"], params["w_EC_IR"], params["w_ER_IR"]],
                 ],
                 dtype=jnp.float32,
             )
@@ -1193,9 +1210,9 @@ def _(np):
             i0_i = np.asarray([p["i0_IL"], p["i0_IC"], p["i0_IR"]], dtype=np.float32)
             w_ei = np.asarray(
                 [
-                    [0.0, p["w_EC_IL"], p["w_ER_IL"]],
-                    [p["w_EL_IC"], 0.0, p["w_ER_IC"]],
-                    [p["w_EL_IR"], p["w_EC_IR"], 0.0],
+                    [p["w_EL_IL"], p["w_EC_IL"], p["w_ER_IL"]],
+                    [p["w_EL_IC"], p["w_EC_IC"], p["w_ER_IC"]],
+                    [p["w_EL_IR"], p["w_EC_IR"], p["w_ER_IR"]],
                 ],
                 dtype=np.float32,
             )
