@@ -258,7 +258,7 @@ def _(architecture_widget, mo):
         $$\phi(x)=\begin{cases}0,&x\le 0\\x^2,&0<x\le 1\\2\sqrt{x-0.75},&x>1\end{cases}$$
 
         $$\tau \dot r_L = -r_L + \phi\!\left(s_L r_L - w_{I_L E_L}r_{I_L} - w_{I_C E_L}r_{I_C} - w_{I_R E_L}r_{I_R} + I_L(t)\right)$$
-        $$\tau \dot r_C = -r_C + \phi\!\left(s_C r_C - w_{I_L E_C}r_{I_L} - w_{I_C E_C}r_{I_C} - w_{I_R E_C}r_{I_R} + I_C(t)\right)$$
+        $$\tau \dot r_C = -r_C + \phi\!\left(s_C r_C - w_{I_L E_C}r_{I_L} - w_{I_C E_C}r_{I_C} - w_{I_R E_C}r_{I_R} + I_C(t)+I_{\mathrm{opto}}(t)\right)$$
         $$\tau \dot r_R = -r_R + \phi\!\left(s_R r_R - w_{I_L E_R}r_{I_L} - w_{I_C E_R}r_{I_C} - w_{I_R E_R}r_{I_R} + I_R(t)\right)$$
         $$\tau \dot r_{I_L} = -r_{I_L} + \phi\!\left(\frac{w_{E_L I_L}}{3}r_L + \frac{w_{E_C I_L}}{3}r_C + \frac{w_{E_R I_L}}{3}r_R + b_{I_L}\right)$$
         $$\tau \dot r_{I_C} = -r_{I_C} + \phi\!\left(\frac{w_{E_L I_C}}{3}r_L + \frac{w_{E_C I_C}}{3}r_C + \frac{w_{E_R I_C}}{3}r_R + b_{I_C} + I_{\mathrm{opto}}(t)\right)$$
